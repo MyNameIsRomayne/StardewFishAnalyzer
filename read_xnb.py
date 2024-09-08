@@ -24,8 +24,10 @@ def main():
         location_name = to_analyze[iter]
         for sublocation in location:
             subloc_blurb = f" ({sublocation})" if (sublocation != "null" and sublocation != location) else ""
-            avg_xp = round( sum(location[sublocation]["xp"])/len(location[sublocation]["xp"]), 2)
-            avg_coin = round( sum(location[sublocation]["coins"])/len(location[sublocation]["coins"]), 2)
+            proportional_xp = [ratio * xp for ratio, xp in zip(location[sublocation]["weights"], location[sublocation]["xp"])]
+            avg_xp = round( sum(proportional_xp), 2 )
+            proportional_coins = [ratio * coins for ratio, coins in zip(location[sublocation]["weights"], location[sublocation]["coins"])]
+            avg_coin = round( sum(proportional_coins), 2 )
             print(f"{location_name}{subloc_blurb}:")
             print(f"Avg XP: {avg_xp} | Avg Coin: {avg_coin} | Total Catchables: {len(location[sublocation]["fish"])}")
             for i, fish in enumerate(location[sublocation]["fish"]):
@@ -35,7 +37,7 @@ def main():
                 subloc_coin = location[sublocation]["coins"][i]
                 subloc_xp   = location[sublocation]["xp"][i]
                 if show_fish_data:
-                    print(f"Reward(s): {names} | Proportion: {proportion} | Average value: {round(subloc_coin, 2)} coins | Average xp: {round(subloc_xp, 2)}")
+                    print(f"Reward(s): {names} | Proportion: {proportion} | Value: {round(subloc_coin, 2)} coins | XP: {round(subloc_xp, 2)}")
 
 if __name__ == "__main__":
     main()
