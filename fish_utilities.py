@@ -13,14 +13,16 @@ from FishLocation import FishLocation
 from GameLocation import GameLocation
 from BaseObject import BaseObject
 
-def get_all_locations_with_fish(json_locations:dict) -> list[GameLocation]:
-    locations_with_fish = []
-    for key in json_locations.keys():
-        if len(json_locations[key]["Fish"]):
-            locations_with_fish.append(key)
-    return locations_with_fish
-
-def get_valid_locations(location:GameLocation) -> dict[str, list[FishLocation]]:
+def get_fish_into_subareas(location:GameLocation) -> dict[str, list[FishLocation]]:
+    """
+    Get the fish in the area keyed by the FishAreaId they have.
+    Any fish with null fish ID go into a subarea called "null".
+    Fish are excluded from any given list if they are:
+    - Part of the LEGENDARY_FAMILY quest
+    - Are a legendary fish
+    - Have a null itemids parameter
+    - Have a reward which is not an object
+    """
     # Handle custom keys, any location with a null key goes into "null". which i *know* is stupid but i donmt care
     locations = {"null": []}
     for key in location.areas:
@@ -140,7 +142,7 @@ def get_fish_composition(locations:dict[str, GameLocation], location_objs: dict[
     for key in locations:
         location = location_objs[key]
         # Go over each sublocation in the location and process *those* individually
-        sublocations = get_valid_locations(location)
+        sublocations = get_fish_into_subareas(location)
         loc_dicts[key] = {}
         for sublocation in sublocations.keys():
 
