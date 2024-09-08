@@ -7,20 +7,37 @@ CatchableData - Initializes and holds information about fish from Fish.json
 Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
+
+from math import floor
+import numpy as np
+
 import config
 import GameReader as gr
-from math import floor
 from BaseObject import BaseObject
 from FurnitureObject import FurnitureObject
+from ProbsAlgorithm import get_probs
+
 
 class GameObject():
     
     def __init__(self):
         # Setup object data
+        self.season = None
+        self.weather = None
+        self.time = None
+
         self.base_objects:dict[str, BaseObject]           = gr.get_objects(config.objects_file,   config.objects_file_py,   BaseObject)
         self.fish_objects:dict[str, CatchableData]        = gr.get_objects(config.fish_file,      config.fish_file_py,      CatchableData)
         self.location_objects:dict[str, GameLocation]     = gr.get_objects(config.locations_file, config.locations_file_py, GameLocation)
         self.furniture_objects:dict[str, FurnitureObject] = gr.get_objects(config.furniture_file, config.furniture_file_py, FurnitureObject)   
+
+    def set_season(self, season:str): self.season = season
+    def set_weather(self, weather:str): self.weather = weather
+    def set_time(self, time:int): self.time = time
+
+    def get_season(self): return self.season
+    def get_weather(self): return self.weather
+    def get_time(self): return self.time
 
     def post_init(self):
         """Handles the post-init phase, for creating associations between object classes after they are all initialized."""
@@ -35,6 +52,90 @@ class GameLocation():
         self.fish:list[FishLocation] = [FishLocation(data_json) for data_json in json_data["Fish"]]
         # FishAreas is a dict keyed by location ID, we just need to show location IDs to users. Noone cares about crab pots/bounds right? >:3
         self.areas = [key for key in json_data["FishAreas"].keys()]
+
+    def get_fish_composition(self):
+        loc_dict:dict[str, dict[str, list[GameLocation]]] = {}
+
+        # Go over each sublocation in the location and process *those* individually
+        sublocations = get_fish_into_subareas(self)
+        for sublocation in sublocations.keys():
+
+            fish_locations:list[FishLocation] = [e for e in sublocations[sublocation]]
+            # Everyone except default get a copy of default
+            if (self.id != "Default"):
+                fish_locations += [loc for loc in game.location_objects["Default"].fish]
+            catchables = get_subloc_fish_comp(fish_locations, game.get_season(), game.get_weather(), game.get_time())
+            subloc_by_precedence:dict[str, list[FishLocation]] = {}
+            for c in catchables:
+                matching_key = str(c.precedence)
+                if matching_key not in subloc_by_precedence:
+                    subloc_by_precedence[matching_key] = []
+                subloc_by_precedence[matching_key].append(c)
+
+            loc_dict[sublocation] = subloc_by_precedence
+        
+        # Repack everything back into lists from precedence
+        loc_dicts_refined:dict[str, list[FishLocation]] = {}
+        loc_dicts_refined = {}
+        for sub_loc_key in loc_dict.keys():
+            loc_dicts_refined[sub_loc_key] = {}
+            precedence_markers = [int(e) for e in loc_dict[sub_loc_key]]
+            precedence_markers.sort()
+            # Setup initial lists for subloc
+            loc_dicts_refined[sub_loc_key]["weights"] = []
+            loc_dicts_refined[sub_loc_key]["fish"] = []
+            loc_dicts_refined[sub_loc_key]["xp"] = []
+            loc_dicts_refined[sub_loc_key]["coins"] = []
+            # This is just for ease of reading
+            fish_list:list = loc_dicts_refined[sub_loc_key]["fish"]
+            weights_list:list = loc_dicts_refined[sub_loc_key]["weights"]
+            chance_fail_all_previous = 1
+            for marker in precedence_markers:
+                marker = str(marker)
+                fish_list += loc_dict[sub_loc_key][marker]
+                chance_list = []
+                for loc in loc_dict[sub_loc_key][marker]:
+                    loc:FishLocation
+                    loc_chance = loc.chance
+                    # Yes, it also calculates this. ugh..
+                    specific_fish_chance = 1
+                    fish_id = loc.itemids[0].id
+                    if fish_id in game.fish_objects.keys():
+                        fish_object = game.fish_objects[fish_id]
+                        specific_fish_chance = fish_object.get_average_chance()
+                    chance_list.append(loc_chance * specific_fish_chance)
+                current_weights = get_probs(np.array(chance_list))
+                sum_current_weights = sum(current_weights)
+                reduced_weights = [weight * chance_fail_all_previous for weight in current_weights]
+                weights_list += reduced_weights
+                chance_fail_all_previous *= (1 - sum_current_weights)
+    
+            # Add price/xp stats
+            coins_list:list = loc_dicts_refined[sub_loc_key]["coins"]
+            xp_list:list = loc_dicts_refined[sub_loc_key]["xp"]
+            for fish in loc_dicts_refined[sub_loc_key]["fish"]:
+                fish:FishLocation
+                sum_coins = 0
+                sum_xp = 0
+                # Handle getting all the objects to use
+                for loot_id in [obj.id for obj in fish.itemids]:
+                    value, xp = 0, 0
+                    # Coins might be yoinkable from here first if it isnt a fish
+                    if loot_id in game.base_objects.keys():
+                        value = game.base_objects[loot_id].price
+                    # If it is, we can get coins AND xp
+                    if loot_id in game.fish_objects.keys():
+                        value = game.fish_objects[loot_id].get_average_value()
+                        xp = game.fish_objects[loot_id].get_average_xp()
+                    # Finally, add it to the sum
+                    sum_coins += value
+                    sum_xp += xp
+                # Got all the catchables, add relevant data to lists
+                coins_list.append(sum_coins/len(fish.itemids))
+                xp_list.append(sum_xp/len(fish.itemids))
+
+        return loc_dicts_refined
+
 class FishLocation():
     
     def __init__(self, json_data:dict):
@@ -186,6 +287,8 @@ class CatchableData():
         Gets the average chance that this particular fish should be caught, given some parameters.
         Namely, it uses the same exact calculations found in GameLocation.cs, line 13937-13974.
         """
+        if self.is_trap(): return self.chance
+
         chance = self.spawn_mult
         dropOff = self.spawn_mult * self.depth_mult
         chance -= max(0, self.max_depth - water_depth) * dropOff
@@ -213,6 +316,8 @@ class CatchableData():
     
     def get_average_xp(self, fish_quality:int = None, perfect = False, treasure = False):
         # https://stardewvalleywiki.com/Fishing#Experience_Points 1.6.8
+        if self.is_trap(): return 5 # Crab pots always net 5xp, no matter what
+
         fish_quality = self.get_average_quality() if (fish_quality == None) else fish_quality
         if perfect: fish_quality = adjust_quality(fish_quality, 1)
         resultant_xp = floor((fish_quality + 1) * 3)
@@ -374,6 +479,107 @@ def adjust_quality(quality, factor:int):
         if quality == config.QUALITY_GOLD: return config.QUALITY_SILVER
         if quality == config.QUALITY_IRIDIUM: return config.QUALITY_GOLD
         if quality > config.QUALITY_IRIDIUM: return config.QUALITY_GOLD
+
+
+def get_fish_into_subareas(location:GameLocation) -> dict[str, list[FishLocation]]:
+    """
+    Get the fish in the area keyed by the FishAreaId they have.
+    Any fish with null fish ID go into a subarea called "null".
+    Fish are excluded from any given list if they are:
+    """
+    # Handle custom keys, any location with a null key goes into "null". which i *know* is stupid but i donmt care
+    locations = {"null": []}
+    for key in location.areas:
+        locations[key] = []
+    for fish in location.fish:
+        if fish.fishareaid == None:
+            locations["null"].append(fish)
+        else:
+            locations[fish.fishareaid].append(fish)
+    return locations
+
+def get_condition(conditions:str|None, target) -> str|bool:
+    """
+    Gets a target condition from the comma-delimited string passed in.
+    If there are no conditions, returns False.
+    If the target string is not in any condition, returns False.
+    If the target string is in a condition, returns the first occurence.
+    """
+    if conditions == None:
+        return False
+    all_conditions = conditions.split(",")
+    for condition in all_conditions:
+        if target in condition:
+            return condition
+    return False
+
+def try_get_catchable(itemid:str) -> bool|CatchableData:
+    return (game.fish_objects[itemid]) if (itemid in game.fish_objects.keys()) else (False)
+
+
+"""
+
+        if (any([(reward.id not in game.base_objects.keys()) for reward in fish.itemids])): continue # exclude non-objects
+        # Passed, add to appropriate location
+"""
+
+def get_subloc_fish_comp(subloc_fish:list[FishLocation], season:str=None, weather:str=None, time:int=None, usingMagicBait:bool=False):
+    passed_fish:list[FishLocation] = []
+    for fish_loc in subloc_fish:
+        # Ignore boss fish
+        if (fish_loc.isbossfish):
+            continue
+        # Ignore QI quest fish
+        if (fish_loc.condition) and ("LEGENDARY_FAMILY" in fish_loc.condition):
+            continue
+        # Ignore QI beans
+        if (fish_loc.condition) and ("DROP_QI_BEANS" in fish_loc.condition):
+            continue
+        # Ignore festival fish
+        if (fish_loc.condition) and ("IS_PASSIVE_FESTIVAL_OPEN" in fish_loc.condition):
+            continue
+        # Ignore fish which choose a random one from sublocation (TODO: Don't do that)
+        if ("RANDOM_FISH" in fish_loc.itemids):
+            continue
+        # Ignore weird things
+        if (None in fish_loc.itemids):
+            continue
+        # Filter for Data/Fish
+        presumed_fish = try_get_catchable(fish_loc.itemids[0])
+        if (presumed_fish) and (not fish_loc.ignoresubdata) and (not presumed_fish.fish_satisfies_subdata(season, weather, time)):
+                continue
+        # Filter magic bait
+        if (fish_loc.requiremagicbait) and (not usingMagicBait):
+            continue
+        # Filter by season
+        if (season != None):
+            season_lowercase = season.lower()
+            # The season param is one thing, but the conditions also need parsing to check for LOCATION_SEASON
+            if ((fish_loc.season != None) and (fish_loc.season != season)):
+                continue
+            # "LOCATION_SEASON Here spring fall" fuckin why
+            condition_season = get_condition(fish_loc.condition, "LOCATION_SEASON")
+            if condition_season != False:
+                # Get all arguments as lowercase strings. helps for case-insensitive season checking.
+                tokens = [str(token).lower() for token in condition_season.split(" ")]
+                # It should look something like ["location_season", "here", "spring", "fall"] now
+                if season_lowercase not in tokens:
+                    continue
+        # Filter by weather
+        if (weather != None):
+            weather_lowercase = weather.lower()
+            # WEATHER Here Rain Storm
+            condition_weather = get_condition(fish_loc.condition, "WEATHER")
+            if condition_weather != False:
+                # Get all arguments as lowercase strings. helps for case-insensitive season checking.
+                tokens = [str(token).lower() for token in condition_season.split(" ")]
+                # It should look something like ["weather", "here", "rain", "storm"] now
+                if weather_lowercase not in tokens:
+                    continue
+        # Filter by time is done in fish_satisfies_subdata
+        # Filtering complete by location/season/weather/time, add as one of those which pass
+        passed_fish.append(fish_loc)
+    return passed_fish
 
 # Static vars (more helpers)
 
