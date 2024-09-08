@@ -42,13 +42,6 @@ def get_fish_into_subareas(location:GameLocation) -> dict[str, list[FishLocation
             locations[fish.fishareaid].append(fish)
     return locations
 
-def get_items_from(locations:list[FishLocation], loc):
-    items = []
-    location = locations[loc]
-    for fishloc in location:
-        items += fishloc.itemids
-    return items
-
 def get_condition(conditions:str|None, target):
     if conditions == None:
         return False
