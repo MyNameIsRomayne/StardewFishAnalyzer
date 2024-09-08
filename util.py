@@ -3,6 +3,7 @@ Stuff from my local utilities file required to be kept for the project to work.
 Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
+import os
 from math import floor
 from os.path import exists
 import json
@@ -147,3 +148,8 @@ def profile(func, *args, **kwargs) -> float:
     start = time.perf_counter()
     func(*args, **kwargs)
     return time.perf_counter() - start
+
+def get_dir_total_file_lines() -> int:
+    """Get the total amount of lines in the current directory. IDK, its just cool."""
+    current_dir_files = [file for file in os.listdir(os.getcwd()) if not os.path.isdir(file)]
+    return sum([len(open(file).readlines()) for file in current_dir_files])

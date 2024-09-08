@@ -5,13 +5,9 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 
 import numpy as np
 
-from config import objects_json, fish_json
 from ProbsAlgorithm import get_probs
 
-from CatchableData import CatchableData
-from FishLocation import FishLocation
-from GameLocation import GameLocation
-from BaseObject import BaseObject
+from GameObject import game, GameLocation, FishLocation, CatchableData, BaseObject
 
 def get_fish_into_subareas(location:GameLocation) -> dict[str, list[FishLocation]]:
     """
@@ -32,7 +28,7 @@ def get_fish_into_subareas(location:GameLocation) -> dict[str, list[FishLocation
         if fish.isbossfish: continue # exclude legendaries
         if (fish.condition) and ("LEGENDARY_FAMILY" in fish.condition): continue # exclude Mr Qi quests
         if None in fish.itemids: continue # exclude weird things
-        if any([(reward.id not in objects_json.keys()) for reward in fish.itemids]): continue # exclude non-objects
+        if any([(reward.id not in game.base_objects.keys()) for reward in fish.get_itemids()]): continue # exclude non-objects
         # if "RANDOM_FISH" in fish.itemids:
         #     
         # Passed, add to appropriate location
@@ -42,7 +38,7 @@ def get_fish_into_subareas(location:GameLocation) -> dict[str, list[FishLocation
             locations[fish.fishareaid].append(fish)
     return locations
 
-def get_condition(conditions:str|None, target) -> str|False:
+def get_condition(conditions:str|None, target) -> str|bool:
     """
     Gets a target condition from the comma-delimited string passed in.
     If there are no conditions, returns False.
@@ -57,39 +53,8 @@ def get_condition(conditions:str|None, target) -> str|False:
             return condition
     return False
 
-def fish_satisfies_subdata(fish_loc:FishLocation, season:str, weather:str, time:int):
-    presumed_item = fish_loc.itemids[0]
-    # Satisfies by default if is trap/not in fish data
-    if not presumed_item.id in fish_json.keys():
-        return True
-    fish_raw_data = str(fish_json[presumed_item.id]).split("/")
-    if fish_raw_data[1] == "trap":
-        return True
-    # Check time
-    INDEX_TIME_DATA = 5
-    INDEX_SEASONS = 6
-    times = fish_raw_data[INDEX_TIME_DATA].split(" ")
-    # 1 2 3 4 is two checks for between 1 and 2, or between 3 and 4
-    amt_intervals = int(len(times)/2)
-    passed_any_interval = False
-    for interval in range(amt_intervals):
-        interval_start = int(times[(interval * 2) + 0])
-        interval_end = int(times[(interval * 2) + 1])
-        # Inclusive, time may equal start time
-        if time < interval_start:
-            continue
-        # Exclusive, time may not equal end time
-        if time >= interval_end:
-            continue
-        passed_any_interval = True
-        break
-    if not passed_any_interval:
-        return False
-    # Checks for time over, check season
-    seasons = fish_raw_data[INDEX_SEASONS].split(" ")
-    if season not in seasons:
-        return False
-    return True
+def try_get_catchable(itemid:str) -> bool|CatchableData:
+    return (game.fish_objects[itemid]) if (itemid in game.fish_objects.keys()) else (False)
 
 def get_subloc_fish_comp(subloc_fish:list[FishLocation], season:str=None, weather:str=None, time:int=None, usingMagicBait:bool=False):
     passed_fish:list[FishLocation] = []
@@ -98,7 +63,8 @@ def get_subloc_fish_comp(subloc_fish:list[FishLocation], season:str=None, weathe
         if (fish_loc.condition) and ("DROP_QI_BEANS" in fish_loc.condition):
             continue
         # Filter for Data/Fish
-        if (not fish_loc.ignoresubdata) and (not fish_satisfies_subdata(fish_loc, season, weather, time)):
+        presumed_fish = try_get_catchable(fish_loc.itemids[0])
+        if (presumed_fish) and (not fish_loc.ignoresubdata) and (not presumed_fish.fish_satisfies_subdata(season, weather, time)):
                 continue
         # Filter magic bait
         if (fish_loc.requiremagicbait) and (not usingMagicBait):

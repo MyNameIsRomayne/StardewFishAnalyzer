@@ -53,16 +53,5 @@ fish_file_py      = data_dir + Path("fish_data.dat")
 locations_file_py = data_dir + Path("location_data.dat")
 furniture_file_py = data_dir + Path("furniture_data.dat")
 
-# Setup object data
-fish_json      = read_file_json(fish_file)
-objects_json   = read_file_json(objects_file)
-furniture_json = read_file_json(furniture_file)
-locations_json = read_file_json(locations_file)
-
-item_type_jsons = {
-    "(O)": objects_json,
-    "(F)": furniture_json,
-}
-
 # Locations of which to check for fish data readouts.
 whitelist_fish_locations = ["Default", "Town"]

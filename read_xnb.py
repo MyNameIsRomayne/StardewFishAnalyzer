@@ -6,17 +6,12 @@ import config
 import fish_utilities as util
 
 def main():
-    import GameReader
-    from GameLocation import GameLocation
-    from FishLocation import FishLocation
-    from CatchableData import CatchableData
-    from BaseObject import BaseObject
-    from FurnitureObject import FurnitureObject
+    from GameObject import game
 
-    base_objects:dict[str, BaseObject]           = GameReader.get_objects(config.objects_file,   config.objects_file_py,   BaseObject)
-    fish_objects:dict[str, CatchableData]        = GameReader.get_objects(config.fish_file,      config.fish_file_py,      CatchableData)
-    location_objects:dict[str, GameLocation]     = GameReader.get_objects(config.locations_file, config.locations_file_py, GameLocation)
-    furniture_objects:dict[str, FurnitureObject] = GameReader.get_objects(config.furniture_file, config.furniture_file_py, FurnitureObject)
+    base_objects      = game.base_objects
+    fish_objects      = game.fish_objects
+    location_objects  = game.location_objects
+    furniture_objects = game.furniture_objects
 
     show_fish_data = True
     # Now that we have populated objects of each whitelisted fish location in a dict, get the stats of them
@@ -32,7 +27,6 @@ def main():
             print(f"{location}{subloc_blurb}:")
             print(f"Avg XP: {avg_xp} | Avg Coin: {avg_coin} | Total Catchables: {len(results[location][sublocation]["fish"])}")
             for i, fish in enumerate(results[location][sublocation]["fish"]):
-                fish:FishLocation
                 names = ", ".join([obj.name for obj in fish.itemids])
                 proportion  = results[location][sublocation]["weights"][i]
                 proportion  = f"{round(proportion*100, 2)}%".rjust(6, " ")
