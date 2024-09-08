@@ -122,7 +122,7 @@ class GameLocation():
                 sum_xp = 0
                 # Handle getting all the objects to use
                 for loot_id in [obj.id for obj in fish.itemids]:
-                    value, xp = 0, 0
+                    value, xp = 0, 3
                     # Coins might be yoinkable from here first if it isnt a fish
                     if loot_id in game.base_objects.keys():
                         value = game.base_objects[loot_id].price
