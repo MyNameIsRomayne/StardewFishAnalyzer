@@ -18,7 +18,7 @@ def main():
     season = "summer" #"spring"
     weather = "Sunny"
     time = 650 # 1200
-    results = util.get_fish_composition(config.whitelist_fish_locations, location_objects, fish_objects, base_objects, season, weather, time)
+    results = util.get_fish_composition(config.whitelist_fish_locations, season, weather, time)
     for location in results:
         for sublocation in results[location]:
             subloc_blurb = f" ({sublocation})" if (sublocation != "null" and sublocation != location) else ""

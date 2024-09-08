@@ -99,13 +99,12 @@ def get_subloc_fish_comp(subloc_fish:list[FishLocation], season:str=None, weathe
         passed_fish.append(fish_loc)
     return passed_fish
 
-def get_fish_composition(locations:dict[str, GameLocation], location_objs: dict[str, GameLocation], fish_objs:dict[str, CatchableData],
-                         objects_json:dict[str, BaseObject], season:str, weather:str, time:int):
+def get_fish_composition(whitelist_locations:list[str], season:str, weather:str, time:int):
     loc_dicts:dict[str, dict[str, dict[str, list[GameLocation]]]] = {}
 
     # Setup all the sublocs with fish into the above dict by location, sublocation, and then precedence
-    for key in locations:
-        location = location_objs[key]
+    for key in whitelist_locations:
+        location = game.location_objects[key]
         # Go over each sublocation in the location and process *those* individually
         sublocations = get_fish_into_subareas(location)
         loc_dicts[key] = {}
@@ -114,7 +113,7 @@ def get_fish_composition(locations:dict[str, GameLocation], location_objs: dict[
             fish_locations:list[FishLocation] = [e for e in sublocations[sublocation]]
             if key != "Default":
                 # Everyone except default get a copy of default
-                fish_locations += [loc for loc in location_objs["Default"].fish]
+                fish_locations += [loc for loc in game.location_objects["Default"].fish]
             catchables = get_subloc_fish_comp(fish_locations, season, weather, time)
             subloc_by_precedence:dict[str, list[FishLocation]] = {}
             for c in catchables:
@@ -152,8 +151,8 @@ def get_fish_composition(locations:dict[str, GameLocation], location_objs: dict[
                     # Yes, it also calculates this. ugh..
                     specific_fish_chance = 1
                     fish_id = loc.itemids[0].id
-                    if fish_id in fish_objs.keys():
-                        fish_object = fish_objs[fish_id]
+                    if fish_id in game.fish_objects.keys():
+                        fish_object = game.fish_objects[fish_id]
                         specific_fish_chance = fish_object.get_average_chance()
                     chance_list.append(loc_chance * specific_fish_chance)
                 current_weights = get_probs(np.array(chance_list))
@@ -173,12 +172,12 @@ def get_fish_composition(locations:dict[str, GameLocation], location_objs: dict[
                 for loot_id in [obj.id for obj in fish.itemids]:
                     value, xp = 0, 0
                     # Coins might be yoinkable from here first if it isnt a fish
-                    if loot_id in objects_json.keys():
-                        value = objects_json[loot_id].price
+                    if loot_id in game.base_objects.keys():
+                        value = game.base_objects[loot_id].price
                     # If it is, we can get coins AND xp
-                    if loot_id in fish_objs.keys():
-                        value = fish_objs[loot_id].get_average_value()
-                        xp = fish_objs[loot_id].get_average_xp()
+                    if loot_id in game.fish_objects.keys():
+                        value = game.fish_objects[loot_id].get_average_value()
+                        xp = game.fish_objects[loot_id].get_average_xp()
                     # Finally, add it to the sum
                     sum_coins += value
                     sum_xp += xp
