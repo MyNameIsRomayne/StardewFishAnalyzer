@@ -13,12 +13,17 @@ from config import objects_json
 class CatchableData():
 
     def __init__(self, id, data:str):
+        """
+        Setup the data for this catchable from data.
+        The variables depend on whether it's a fish trap catchable or a fishing rod catchable.
+        To check for this, call is_trap()
+        """
         split_data:list[str] = data.split("/")
         # Setup data as a trap fish
         if (split_data[1] == "trap"):
             self.id = id
             # Clarify it is a trap fish
-            self.is_trap = True
+            self.istrap = True
             # Indices of variables in split_data for readability.
             INDEX_NAME     = 0
             INDEX_CHANCE   = 2
@@ -47,7 +52,7 @@ class CatchableData():
             # The internal ID of the fish
             self.id = id
             # Clarify that this is not a crab pot 'fish'
-            self.is_trap = False
+            self.istrap = False
             # The associated object with this fish's ID
             self.fish_object = objects_json[self.id]
             # The internal (english) name of the fish
@@ -83,15 +88,27 @@ class CatchableData():
             self.locations          = split_data[INDEX_LOCATIONS]
             self.tutorial_eligible  = split_data[INDEX_TUTORIAL_ELIGIBLE]
 
-    def is_legendary(self):
+    def is_trap(self) -> bool:
+        """Getter for whether or not this is found in crab pot traps."""
+        return self.istrap
+
+    def is_legendary(self) -> bool:
+        """Gets whether this fish is a legendary fish."""
         return "fish_legendary" in self.fish_object["ContextTags"]
 
-    def get_average_size(self):
+    def get_average_size(self, fishing_zone = 4, fishing_skill = 10) -> float:
+        """Gets the average size of this fish, dependent on the fishing zone and fishing skill."""
         # fishSize = Zone/5 * (Skill+2)/10 * Random/100
-        # fuk that, we do btwn min/max
-        return (float(self.min_size) + float(self.max_size)) / 2
+        # For the sake of "Average", random will be 50
+        AVERAGE_RANDOM = 50
+        return (fishing_zone/5) * (fishing_skill+2)/10 * AVERAGE_RANDOM/100
 
-    def get_average_quality(self):
+    def get_average_quality(self) -> int:
+        """
+        Get the average quality of the fish, depending on its size.
+        This will be an exact quality based off the average size,
+        so as far as getting average price goes it may be slightly skewed.
+        """
         size = self.get_average_size()
         if size < 0.33:
             return QUALITY_NORMAL
@@ -101,7 +118,8 @@ class CatchableData():
 
     def get_average_chance(self, water_depth=4, fishing_level=6, is_training_rod=False,
                            curiosity_lure=False, curiosity_lure_buff=0, bait_targets_fish=False,
-                           apply_daily_luck=False, daily_luck=0, chance_modifiers=[]):
+                           apply_daily_luck=False, daily_luck=0, chance_modifiers:list[tuple[float, str]]=[],
+                           chance_mode:str=None):
         """
         Gets the average chance that this particular fish should be caught, given some parameters.
         Namely, it uses the same exact calculations found in GameLocation.cs, line 13937-13974.
@@ -121,9 +139,9 @@ class CatchableData():
                 chance = (max_val - min_val) / max_val * chance + (max_val - min_val) / 2
         chance = (chance * 1.6) if (bait_targets_fish) else (chance)
         chance = (chance + daily_luck) if (apply_daily_luck) else (chance)
-        if len(chance_modifiers):
-            raise NotImplementedError
-        return chance
+        if not len(chance_modifiers):
+            return chance
+        return apply_chance_modifiers(chance, chance_modifiers, chance_mode)
 
     def get_average_value(self, fish_quality:int = None, skill_bonus = SKILL_NONE):
         fish_quality = self.get_average_quality() if (fish_quality == None) else fish_quality
@@ -152,6 +170,45 @@ def scale_price_by_quality(price:int, quality:int):
     if quality == QUALITY_GOLD: return floor(price * PRICE_SCALE_GOLD)
     if quality == QUALITY_IRIDIUM: return floor(price * PRICE_SCALE_IRIDIUM)
 
+def apply_chance_modifiers(chance:float, modifiers:list[tuple[float, str]], chance_mode:str):
+    """
+    Apply chance modifiers to a chance depending on chance_mode.
+    modifiers: a list of tuples corresponding to (chance, mode), where modifier modes can be:
+    "add", "subtract", "multiply", "divide", "set".
+    The first four are self-explanatory, but to elaborate on set, it just sets the value to whatever it is.
+    chance_mode: the chance mode to use, which is one of the following:
+    Minimum: Take the least of two chances being applied.
+    Maximum: Take the most of two chances being applied:
+    Set (default): Just apply each chance iteratively.
+    """
+    chance_mode = chance_mode.lower()
+    for modifier in modifiers:
+        modifier_chance, mode = modifier[0], modifier[1].lower()
+        # Handle modifier's mode
+        new_chance = chance
+        if mode == "add":
+            new_chance += modifier_chance
+        elif mode == "subtract":
+            new_chance -= modifier_chance
+        elif mode == "multiply":
+            new_chance *= modifier_chance
+        elif mode == "divide":
+            new_chance /= modifier_chance
+        elif mode == "set":
+            new_chance  = modifier_chance
+        else:
+            raise NotImplementedError
+        # Handle arg's chance mode
+        if chance_mode == "minimum":
+            chance = min(chance, new_chance)
+        elif chance_mode == "maximum":
+            chance = max(chance, new_chance)
+        elif chance_mode == "set":
+            chance = new_chance
+        else:
+            raise NotImplementedError
+    return chance
+        
 def adjust_quality(quality, factor:int):
     """Adjust quality up or down n times"""
     # Recurse back to make life easier. Everything below deals in increments of 1
