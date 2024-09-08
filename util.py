@@ -149,7 +149,7 @@ def profile(func, *args, **kwargs) -> float:
     func(*args, **kwargs)
     return time.perf_counter() - start
 
-def format2DListAsTable(l_2d:list[str], char_limit:int=900) -> str:
+def format2DListAsTable(l_2d:list[str], char_limit:int=900, column_delimiter="|") -> str:
     """Pass in a square 2D list, get out a large f-string representing a neat table"""
     amount_columns = len(l_2d[0]) # assume square
     length_columns = [0]*amount_columns
@@ -173,7 +173,7 @@ def format2DListAsTable(l_2d:list[str], char_limit:int=900) -> str:
             if len(row[column]) > char_limit:
                 unadjusted_cell = unadjusted_cell[0:char_limit-2] + ".."
             padded_row.append(unadjusted_cell.ljust(column_width))
-        padded.append(" | ".join(padded_row))
+        padded.append(f" {column_delimiter} ".join(padded_row))
     return "\n".join(padded)
 
 def get_dir_total_file_lines() -> int:

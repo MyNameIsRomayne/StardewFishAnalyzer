@@ -21,6 +21,7 @@ def main():
 
     printable_location_data:list[list[str]] = []
     row_len = 4
+    column_char_limit = 20
 
     for iter, location in enumerate(results):
         if (location == None):
@@ -33,16 +34,15 @@ def main():
             avg_xp = round( sum(proportional_xp), 2 )
             proportional_coins = [ratio * coins for ratio, coins in zip(location[sublocation]["weights"], location[sublocation]["coins"])]
             avg_coin = round( sum(proportional_coins), 2 )
-            # Add name info to location data
-            location_data = [""]*row_len
-            location_data[0] = f"{location_name}{subloc_blurb}"
-            printable_location_data.append(location_data)
             # Add location summary data to location data
             location_data = [""]*row_len
-            location_data[0] = f"Avg XP: {avg_xp}"
-            location_data[1] = f"Avg Coin: {avg_coin}"
-            location_data[2] = f"Total Catchables: {len(location[sublocation]["fish"])}"
+            printable_location_data.append([""]*row_len)
+            location_data[0] = f"{location_name}{subloc_blurb}"
+            location_data[1] = f"Avg XP: {avg_xp}"
+            location_data[2] = f"Avg Coin: {avg_coin}"
+            location_data[3] = f"Total Catchables: {len(location[sublocation]["fish"])}"
             printable_location_data.append(location_data)
+            printable_location_data.append(["-"*column_char_limit]*row_len)
             # Add location data for each fish
             for i, fish in enumerate(location[sublocation]["fish"]):
                 names = ", ".join([obj.name for obj in fish.itemids])
@@ -58,7 +58,7 @@ def main():
                     location_data[3] = f"XP: {round(subloc_xp, 2)}"
                     printable_location_data.append(location_data)
     
-    print(format2DListAsTable(printable_location_data, char_limit=20))
+    print(format2DListAsTable(printable_location_data, char_limit=column_char_limit, column_delimiter="   "))
 
 if __name__ == "__main__":
     main()
