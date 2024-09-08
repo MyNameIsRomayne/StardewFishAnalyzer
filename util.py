@@ -153,3 +153,6 @@ def get_dir_total_file_lines() -> int:
     """Get the total amount of lines in the current directory. IDK, its just cool."""
     current_dir_files = [file for file in os.listdir(os.getcwd()) if not os.path.isdir(file)]
     return sum([len(open(file).readlines()) for file in current_dir_files])
+
+if __name__ == "__main__":
+    print(get_dir_total_file_lines())
