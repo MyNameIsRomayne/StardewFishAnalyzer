@@ -145,6 +145,7 @@ class FishLocation():
         self.fishareaid = json_data["FishAreaId"]
         self.precedence = json_data["Precedence"]
         self.isbossfish = json_data["IsBossFish"]
+        self.set_flag_on_catch = json_data["SetFlagOnCatch"]
         self.requiremagicbait = json_data["RequireMagicBait"]
         self.chancemodifiers = json_data["ChanceModifiers"]
         self.chancemodifiermode = json_data["ChanceModifierMode"]
@@ -526,6 +527,9 @@ def try_get_catchable(itemid:str) -> bool|CatchableData:
 def get_subloc_fish_comp(subloc_fish:list[FishLocation], season:str=None, weather:str=None, time:int=None, usingMagicBait:bool=False):
     passed_fish:list[FishLocation] = []
     for fish_loc in subloc_fish:
+        # Ignore one-time catchables (anything that sets flag on catch does this)
+        if (fish_loc.set_flag_on_catch != None):
+            continue
         # Ignore boss fish
         if (fish_loc.isbossfish):
             continue
