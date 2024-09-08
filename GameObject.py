@@ -1,3 +1,11 @@
+"""
+File for setting up some coupled class objects such as:
+GameObject - Initializes and holds game information about all of the below, as well as base objects from Objects.json and furniture from Furniture.Json
+GameLocation - Initializes and holds information about a game location (only the fish relevant stuff) from Locations.json
+FishLocation - Intitializes and holds information about a fishing location from part of Locations.json
+CatchableData - Initializes and holds information about fish from Fish.json
+Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
+"""
 
 import config
 import GameReader as gr
@@ -14,6 +22,12 @@ class GameObject():
         self.location_objects:dict[str, GameLocation]     = gr.get_objects(config.locations_file, config.locations_file_py, GameLocation)
         self.furniture_objects:dict[str, FurnitureObject] = gr.get_objects(config.furniture_file, config.furniture_file_py, FurnitureObject)   
 
+    def post_init(self):
+        """Handles the post-init phase, for creating associations between object classes after they are all initialized."""
+        [self.fish_objects[key].post_setup() for key in self.fish_objects]
+        for location in [self.location_objects[key] for key in self.location_objects]:
+            [fish_loc.post_setup() for fish_loc in location.fish]
+            
 class GameLocation():
 
     def __init__(self, id:str, json_data:dict):
@@ -42,7 +56,10 @@ class FishLocation():
     def __str__(self):
         return self.itemids[0].name
 
-    def get_itemids(self):
+    def post_setup(self):
+        """
+        Gets the objects from the itemids parsed after initial setup.
+        """
         if self.setup_itemids: return self.itemids
         if "RANDOM_FISH" not in self.itemids:
             self.itemids = [get_object_from_id(itemid, item_type_objects) for itemid in self.itemids]
@@ -127,7 +144,10 @@ class CatchableData():
             self.locations          = split_data[INDEX_LOCATIONS]
             self.tutorial_eligible  = split_data[INDEX_TUTORIAL_ELIGIBLE]
 
-    def refresh_fish_obj(self) -> None:
+    def post_setup(self) -> None:
+        """
+        Gets the game object associated with this catchable after initial setup.
+        """
         self.fish_object = game.base_objects[self.id]
 
     def is_trap(self) -> bool:
@@ -136,7 +156,6 @@ class CatchableData():
 
     def is_legendary(self) -> bool:
         """Gets whether this fish is a legendary fish."""
-        self.refresh_fish_obj()
         return (self.fish_object.context_tags != None) and ("fish_legendary" in self.fish_object.context_tags)
 
     def get_average_size(self, fishing_zone = 4, fishing_skill = 10) -> float:
@@ -187,7 +206,6 @@ class CatchableData():
         return apply_chance_modifiers(chance, chance_modifiers, chance_mode)
 
     def get_average_value(self, fish_quality:int = None, skill_bonus = config.SKILL_NONE):
-        self.refresh_fish_obj()
         fish_quality = self.get_average_quality() if (fish_quality == None) else fish_quality
         base_price = self.fish_object.price
         final_price = scale_price_by_quality(base_price, fish_quality)
@@ -245,6 +263,9 @@ class CatchableData():
 
 def get_object_from_id(object_id:str, item_type_jsons:dict):
     object_type, object_id = process_raw_id(object_id)
+    # Only supported object types
+    if object_type not in ["(F)", "(O)"]:
+        return None
     return item_type_jsons[object_type][object_id]
 
 # Functions

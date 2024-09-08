@@ -28,7 +28,7 @@ def get_fish_into_subareas(location:GameLocation) -> dict[str, list[FishLocation
         if fish.isbossfish: continue # exclude legendaries
         if (fish.condition) and ("LEGENDARY_FAMILY" in fish.condition): continue # exclude Mr Qi quests
         if None in fish.itemids: continue # exclude weird things
-        if any([(reward.id not in game.base_objects.keys()) for reward in fish.get_itemids()]): continue # exclude non-objects
+        if any([(reward.id not in game.base_objects.keys()) for reward in fish.post_setup()]): continue # exclude non-objects
         # if "RANDOM_FISH" in fish.itemids:
         #     
         # Passed, add to appropriate location

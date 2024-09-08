@@ -8,6 +8,8 @@ import fish_utilities as util
 def main():
     from GameObject import game
 
+    game.post_init()
+
     base_objects      = game.base_objects
     fish_objects      = game.fish_objects
     location_objects  = game.location_objects
