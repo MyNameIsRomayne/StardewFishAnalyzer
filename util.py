@@ -149,6 +149,33 @@ def profile(func, *args, **kwargs) -> float:
     func(*args, **kwargs)
     return time.perf_counter() - start
 
+def format2DListAsTable(l_2d:list[str], char_limit:int=900) -> str:
+    """Pass in a square 2D list, get out a large f-string representing a neat table"""
+    amount_columns = len(l_2d[0]) # assume square
+    length_columns = [0]*amount_columns
+    # Get largest index out of each column
+    for column in range(amount_columns):
+        largest_index = 0
+        for row in l_2d:
+            largest_index = max(largest_index, len(row[column]))
+        # Constrain to character limit
+        largest_index = min(char_limit, largest_index)
+        length_columns[column] = max(length_columns[column], largest_index)
+    # Pad columns in each row according to the columns list that was built
+    padded = []
+    # Go through each row to change it to a padded string
+    for row in l_2d:
+        padded_row = []
+        # Go through each column in the row to pad it
+        for column in range(amount_columns):
+            column_width = length_columns[column]
+            unadjusted_cell = row[column]
+            if len(row[column]) > char_limit:
+                unadjusted_cell = unadjusted_cell[0:char_limit-2] + ".."
+            padded_row.append(unadjusted_cell.ljust(column_width))
+        padded.append(" | ".join(padded_row))
+    return "\n".join(padded)
+
 def get_dir_total_file_lines() -> int:
     """Get the total amount of lines in the current directory. IDK, its just cool."""
     current_dir_files = [file for file in os.listdir(os.getcwd()) if not os.path.isdir(file)]
