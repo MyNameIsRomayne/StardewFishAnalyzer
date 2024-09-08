@@ -42,7 +42,13 @@ def get_fish_into_subareas(location:GameLocation) -> dict[str, list[FishLocation
             locations[fish.fishareaid].append(fish)
     return locations
 
-def get_condition(conditions:str|None, target):
+def get_condition(conditions:str|None, target) -> str|False:
+    """
+    Gets a target condition from the comma-delimited string passed in.
+    If there are no conditions, returns False.
+    If the target string is not in any condition, returns False.
+    If the target string is in a condition, returns the first occurence.
+    """
     if conditions == None:
         return False
     all_conditions = conditions.split(",")
