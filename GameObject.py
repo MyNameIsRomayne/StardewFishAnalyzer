@@ -62,9 +62,11 @@ class GameLocation():
 
             fish_locations:list[FishLocation] = [e for e in sublocations[sublocation]]
             # Everyone except default get a copy of default
+            catchables = get_subloc_fish_comp(fish_locations, game.get_season(), game.get_weather(), game.get_time())
+            if (not len(catchables)):
+                continue # nothing catchable here except maybe trash, not worth reporting
             if (self.id != "Default"):
                 fish_locations += [loc for loc in game.location_objects["Default"].fish]
-            catchables = get_subloc_fish_comp(fish_locations, game.get_season(), game.get_weather(), game.get_time())
             subloc_by_precedence:dict[str, list[FishLocation]] = {}
             for c in catchables:
                 matching_key = str(c.precedence)

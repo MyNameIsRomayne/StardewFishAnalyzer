@@ -15,10 +15,12 @@ def main():
     game.set_weather("sunny")
     game.set_time(650)
 
-    to_analyze = ["Default", "Forest"]
+    to_analyze = ["Default", "Town"]
     results = [game.location_objects[key].get_fish_composition() for key in to_analyze]
 
     for iter, location in enumerate(results):
+        if (location == None):
+            continue
         location_name = to_analyze[iter]
         for sublocation in location:
             subloc_blurb = f" ({sublocation})" if (sublocation != "null" and sublocation != location) else ""
