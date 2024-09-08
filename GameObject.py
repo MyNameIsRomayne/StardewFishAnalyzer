@@ -3,7 +3,7 @@ import config
 import GameReader as gr
 from math import floor
 from BaseObject import BaseObject
-from FurnitureObjecti import FurnitureObject
+from FurnitureObject import FurnitureObject
 
 class GameObject():
     
