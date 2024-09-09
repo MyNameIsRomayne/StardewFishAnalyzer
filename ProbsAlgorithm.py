@@ -36,7 +36,7 @@ def get_probs(prob_list:np.ndarray):
     That being said, this gets the average chance elements in prob_list at any position n
     will succeed, given that prob_list is shuffled randomly.
     """
-    if len(prob_list >= 9):
+    if len(prob_list) >= 9:
         print(f"WARN: Prob list of length {len(prob_list)} entered into get_probs, this will take a while!")
     elif len(prob_list) > 10:
         raise TimeoutError("I refuse to let you take what will be approximately 5 minutes for this.")
@@ -47,8 +47,8 @@ def get_probs(prob_list:np.ndarray):
     # Helper var to reduce the amount of times prob_list needs to be inverted
     prob_list_inverted = 1 - prob_list
     total_permutations = factorial(len(prob_list))
-    # Amount of processes should equal amount of cores here
-    use_cores = 8
+    # Amount of processes should exceed total cores here
+    use_cores = 12
     # Setup the ranges of permutations for our results to use
     all_ranges = ranges(total_permutations, use_cores)
     pending_results:list = []
@@ -64,8 +64,6 @@ def get_probs(prob_list:np.ndarray):
     
     for result in pending_results:
         sum_probs = [a + b for a, b in zip(sum_probs, result.get())]
- 
-    print(sum_probs)
 
     return sum_probs
 
