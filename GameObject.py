@@ -330,7 +330,7 @@ class CatchableData():
                 chance = (max_val - min_val) / max_val * chance + (max_val - min_val) / 2
         chance = (chance * (4/3)) if (bait_targets_fish) else (chance)
         chance = (chance + daily_luck) if (apply_daily_luck) else (chance)
-        if not len(chance_modifiers):
+        if (chance_modifiers == None) or (not len(chance_modifiers)):
             return chance
         return apply_chance_modifiers(chance, chance_modifiers, chance_mode)
 
