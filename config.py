@@ -11,6 +11,26 @@ from util import Path, read_file_json, ensure_file_exists
 # This reduces file size / ever so slightly increases load speed
 IGNORE_IRRELEVANT_JSON = True
 
+# Common fishing spots
+LOCATION_DEFAULT        = "Default"
+LOCATION_TOWN           = "Town"
+LOCATION_BEACH          = "Beach"
+LOCATION_MOUNTAIN       = "Mountain"
+LOCATION_FOREST         = "Forest"
+LOCATION_MINE           = "Mine"
+LOCATION_DESERT         = "Desert"
+LOCATION_WOODS          = "Woods"
+LOCATION_BACKWOODS      = "Backwoods"
+
+SEASON_SPRING           = "spring"
+SEASON_SUMMER           = "summer"
+SEASON_FALL             = "fall"
+SEASON_WINTER           = "winter"
+
+WEATHER_SUNNY           = "sunny"
+WEATHER_RAIN            = "rain"
+WEATHER_GREEN_RAIN      = "greenRain"
+
 FISHING_ROD_TRAINING    = "training"
 FISHING_ROD_BAMBOO      = "normal"
 FISHING_ROD_FIBERGLASS  = "fiberglass"

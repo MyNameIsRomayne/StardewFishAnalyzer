@@ -4,23 +4,34 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
 from util import format2DListAsTable
+import config
+
+def classic_to_internal(classical_time:str) -> int:
+    """Turn times like 6:59 AM into 659, and 6:59 PM to 1859 (24 hr time)"""
+    final_time = 0
+    hours, minutes = classical_time.split(":")
+    minutes, am_or_pm = minutes[0:2], minutes[2:].lower()
+    hours, minutes = int(hours), int(minutes)
+    # Add base time
+    final_time += (hours * 100)
+    final_time += (minutes * 1)
+    # Factor in AM/PM
+    if (am_or_pm == "pm"):
+        final_time += 1200
+    return final_time
 
 def main():
     from GameObject import game
 
-    # Setup some defines
-    BAIT_NONE = None
-    BAIT_TARGETED = "target"
-
     # Setup some internal config
     SHOW_FISH = True
     FISHING_LEVEL = 1
-    SEASON = "summer"
-    WEATHER = "sunny"
-    TIME = 1300
-    LOCATIONS = ["Beach"] # , "Town", "Woods", "Forest", "Mountain"]
+    SEASON = config.SEASON_SPRING
+    WEATHER = config.WEATHER_SUNNY
+    TIME = classic_to_internal("6:00AM")
+    LOCATIONS = [config.LOCATION_BEACH]
     SCALE_PCT_PERFECT_CATCHES = 0.5
-    BAIT_USED = "target"
+    BAIT_USED = config.FISHING_BAIT_NONE
     BAIT_TARGET_ID = "128" # pufferfish
     WATER_DEPTH = 4
 
