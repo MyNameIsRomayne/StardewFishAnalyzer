@@ -8,16 +8,36 @@ from util import format2DListAsTable
 def main():
     from GameObject import game
 
+    # Setup some defines
+    BAIT_NONE = None
+    BAIT_TARGETED = "target"
+
+    # Setup some internal config
+    SHOW_FISH = True
+    FISHING_LEVEL = 1
+    SEASON = "summer"
+    WEATHER = "sunny"
+    TIME = 1300
+    LOCATIONS = ["Beach"] # , "Town", "Woods", "Forest", "Mountain"]
+    SCALE_PCT_PERFECT_CATCHES = 0.5
+    BAIT_USED = "target"
+    BAIT_TARGET_ID = "128" # pufferfish
+    WATER_DEPTH = 4
+
+    # Act upon above info
     game.post_init()
+    game.season = SEASON
+    game.weather = WEATHER
+    game.time = TIME
 
-    show_fish_data = True
+    game_player = game.player
+    game_player.fishing_level = FISHING_LEVEL
+    game_player.pct_perfect = SCALE_PCT_PERFECT_CATCHES
+    game_player.bait = BAIT_USED
+    game_player.bait_target_id = BAIT_TARGET_ID
+    game_player.fishing_depth = WATER_DEPTH
 
-    game.set_season("summer")
-    game.set_weather("sunny")
-    game.set_time(650)
-
-    to_analyze = ["Default", "Town"]
-    results = [game.location_objects[key].get_fish_composition() for key in to_analyze]
+    results = [game.location_objects[key].get_fish_composition() for key in LOCATIONS]
 
     printable_location_data:list[list[str]] = []
     row_len = 4
@@ -26,7 +46,7 @@ def main():
     for iter, location in enumerate(results):
         if (location == None):
             continue
-        location_name = to_analyze[iter]
+        location_name = LOCATIONS[iter]
         for sublocation in location:
             # Get format data & average XP/Coin data
             subloc_blurb = f" ({sublocation})" if (sublocation != "null" and sublocation != location) else ""
@@ -50,7 +70,7 @@ def main():
                 proportion  = f"{round(proportion*100, 2)}%".rjust(6, " ")
                 subloc_coin = location[sublocation]["coins"][i]
                 subloc_xp   = location[sublocation]["xp"][i]
-                if show_fish_data:
+                if SHOW_FISH:
                     location_data = [""]*row_len
                     location_data[0] = f"{names}"
                     location_data[1] = f"Proportion: {proportion}"
