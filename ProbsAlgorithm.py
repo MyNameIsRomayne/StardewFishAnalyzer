@@ -36,6 +36,11 @@ def get_probs(prob_list:np.ndarray):
     That being said, this gets the average chance elements in prob_list at any position n
     will succeed, given that prob_list is shuffled randomly.
     """
+    if len(prob_list >= 9):
+        print(f"WARN: Prob list of length {len(prob_list)} entered into get_probs, this will take a while!")
+    elif len(prob_list) > 10:
+        raise TimeoutError("I refuse to let you take what will be approximately 5 minutes for this.")
+    
     # Setup variables before sending off the worker processes
     # Final collection list for the results
     sum_probs = [0]*len(prob_list)
@@ -75,4 +80,7 @@ def get_subsets(nparray, sublen):
         yield nparray[i:i+sublen]
 
 if __name__ == "__main__":
-    print(get_probs(np.array([0.25, 0.5, 1, 0.25, 0.5, 1, 0.25, 0.5, 1])))
+    import time
+    start = time.perf_counter()
+    print(get_probs(np.array([0.25, 0.5, 1, 0.25, 0.5, 1, 0.25, 0.5, 1, 0.25])))
+    print(time.perf_counter() - start)
