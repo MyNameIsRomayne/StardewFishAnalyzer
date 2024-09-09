@@ -6,17 +6,13 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 import itertools
 from math import factorial
 import numpy as np
+from math import ceil
+import multiprocessing
 
-def get_probs(prob_list:np.ndarray):
-    """
-    WARNING: Highly unoptimized, will take extremely long for len>10.
-    That being said, this gets the average chance elements in prob_list at any position n
-    will succeed, given that prob_list is shuffled randomly.
-    """
+def process_permutation(prob_list, prob_list_inverted, permutations):
     sum_probs = [0]*len(prob_list)
-    prob_list_inverted = 1 - prob_list
 
-    for permutation in itertools.permutations(range(len(prob_list))):
+    for permutation in permutations:
         for iter, i in enumerate(permutation):
             if iter == 0:
                 sum_probs[i] += prob_list[i]
@@ -30,6 +26,44 @@ def get_probs(prob_list:np.ndarray):
     final_sums = [i/total_permutations for i in sum_probs]
     return final_sums
 
+def ranges(N, nb):
+    step = N / nb
+    return [range(round(step*i), round(step*(i+1))) for i in range(nb)]
+
+def get_probs(prob_list:np.ndarray):
+    """
+    WARNING: Highly unoptimized, will take extremely long for len>10.
+    That being said, this gets the average chance elements in prob_list at any position n
+    will succeed, given that prob_list is shuffled randomly.
+    """
+    # Setup variables before sending off the worker processes
+    # Final collection list for the results
+    sum_probs = [0]*len(prob_list)
+    # Helper var to reduce the amount of times prob_list needs to be inverted
+    prob_list_inverted = 1 - prob_list
+    total_permutations = factorial(len(prob_list))
+    # Amount of processes should equal amount of cores here
+    use_cores = 8
+    # Setup the ranges of permutations for our results to use
+    all_ranges = ranges(total_permutations, use_cores)
+    pending_results:list = []
+    pool = multiprocessing.Pool(processes=use_cores)
+    # Permutations need to be generated iteratively first, unfortunately, so do that
+    permutation_iterator = itertools.permutations(range(len(prob_list)))
+    for subrange in all_ranges:
+        split_permutation = []
+        for _ in subrange:
+            split_permutation.append(permutation_iterator.__next__())
+        async_result = pool.apply_async(process_permutation, (prob_list, prob_list_inverted, split_permutation))
+        pending_results.append( async_result )
+    
+    for result in pending_results:
+        sum_probs = [a + b for a, b in zip(sum_probs, result.get())]
+ 
+    print(sum_probs)
+
+    return sum_probs
+
 def get_subsets(nparray, sublen):
     """(Buggy, unused) get the subsets of some nparray by sublen."""
     limit = len(nparray) - sublen
@@ -39,3 +73,6 @@ def get_subsets(nparray, sublen):
             yield np.concatenate([nparray[i:i+sublen], nparray[0:i-limit]])
             continue
         yield nparray[i:i+sublen]
+
+if __name__ == "__main__":
+    print(get_probs(np.array([0.25, 0.5, 1, 0.25, 0.5, 1, 0.25, 0.5, 1])))
