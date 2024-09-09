@@ -20,21 +20,29 @@ def classic_to_internal(classical_time:str) -> int:
         final_time += 1200
     return final_time
 
+def internal_to_classic(internal_time:int) -> str:
+    """Turn times like 659 into 6:59AM, and 1859 to 6:59PM"""
+    hours = int(internal_time/100)
+    minutes = int(internal_time%100)
+    am_or_pm = ("AM") if (internal_time < 1200) else ("PM")
+    hours = (hours - 12) if (internal_time > 1200) else (hours)
+    return f"{hours}:{minutes}{am_or_pm}"
+
 def main():
     from GameObject import game
-
+    print('')
     # Setup some internal config
     SHOW_FISH = True
-    FISHING_LEVEL = 1
-    SEASON = config.SEASON_SPRING
+    FISHING_LEVEL = 2
+    SEASON = config.SEASON_SUMMER
     WEATHER = config.WEATHER_SUNNY
-    TIME = classic_to_internal("6:00AM")
+    TIME = classic_to_internal("1:23PM")
     LOCATIONS = [config.LOCATION_BEACH]
     SCALE_PCT_PERFECT_CATCHES = 0.5
-    BAIT_USED = config.FISHING_BAIT_NONE
+    ROD_USED = config.FISHING_ROD_BAMBOO
+    BAIT_USED = config.FISHING_BAIT_TARGETED
     BAIT_TARGET_ID = "128" # pufferfish
     WATER_DEPTH = 4
-
     # Act upon above info
     game.post_init()
     game.season = SEASON
@@ -44,9 +52,19 @@ def main():
     game_player = game.player
     game_player.fishing_level = FISHING_LEVEL
     game_player.pct_perfect = SCALE_PCT_PERFECT_CATCHES
+    game_player.fishing_rod = ROD_USED
     game_player.bait = BAIT_USED
     game_player.bait_target_id = BAIT_TARGET_ID
     game_player.fishing_depth = WATER_DEPTH
+
+    BAIT_TARGET_NAME = (game.base_objects[BAIT_TARGET_ID].name) if (BAIT_USED == config.FISHING_BAIT_TARGETED) else ("none")
+    # Print out initial data
+    initial_data = [
+        [f"Season: {game.season}", f"Weather: {game.weather}", f"Time: {internal_to_classic(TIME)}"],
+        [f"Depth: {WATER_DEPTH}", f"Bait: {BAIT_USED}", f"Bait Target: {BAIT_TARGET_NAME}"],
+        [f"Fishing Level: {FISHING_LEVEL}", f"Perfect catches: {SCALE_PCT_PERFECT_CATCHES*100}%", f"Rod used: {ROD_USED}"]
+    ]
+    print(format2DListAsTable(initial_data, char_limit=30))
 
     results = [game.location_objects[key].get_fish_composition() for key in LOCATIONS]
 
