@@ -590,7 +590,7 @@ def get_subloc_fish_comp(subloc_fish:list[FishLocation], season:str=None, weathe
         if (season != None):
             season_lowercase = season.lower()
             # The season param is one thing, but the conditions also need parsing to check for LOCATION_SEASON
-            if (season_lowercase != season):
+            if (season_lowercase != game.season):
                 continue
             # "LOCATION_SEASON Here spring fall" fuckin why
             condition_season = get_condition(fish_loc.condition, "LOCATION_SEASON")
