@@ -66,7 +66,7 @@ def main():
     ]
     print(format2DListAsTable(initial_data, char_limit=30))
 
-    results = [game.location_objects[key].get_fish_composition() for key in LOCATIONS]
+    results = [game.location_objects[key].get_composition() for key in LOCATIONS]
 
     printable_location_data:list[list[str]] = []
     row_len = 4

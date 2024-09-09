@@ -47,28 +47,70 @@ class GameLocation():
         # FishAreas is a dict keyed by location ID, we just need to show location IDs to users. Noone cares about crab pots/bounds right? >:3
         self.areas = [key for key in json_data["FishAreas"].keys()]
 
-    def get_fish_composition(self):
+    def get_fish_in_subarea(self, target_id:str|None) -> list["FishLocation"]:
+        """
+        Get all the fish which are associated with a certain area_id.
+        If the target_id is None, all fish with no particular area ID will be returned.
+        """
+        fish_in_area:list[FishLocation] = []
+        for fish in self.fish:
+            if fish.fishareaid == target_id:
+                fish_in_area.append(fish)
+        return fish_in_area
+
+    def get_area_composition(self, target_id:str|None):
+        """
+        Get the composition of catchable fish in this area which correspond to a particular area ID.
+        If target_id is None, all fish with no particular area ID will be used.
+        """
+        # All of the fish within the area
+        fish_in_area:list[FishLocation] = self.get_fish_in_subarea(target_id)
+        # All of the fish which can be caught in the area, according to player and game data
+        fish_catchable_in_area = filter_catchable_fish(fish_in_area)
+        # The catchable fish in the area, placed into a dictionary keyed by their precedence values.
+        # This is done to properly get the weights of each, as fish order is first done by precedence and then randomly.
+        fish_by_precedence:dict[str, list[FishLocation]] = {}
+
+        if (not len(fish_catchable_in_area)):
+            # nothing catchable here except maybe trash, not worth reporting
+            return {}
+        
+        # If the area isn't the default, it will inherit catchables from the Default location
+        # I guess technically default could inherit itself but it just makes a mess for no reason to not do this check
+        if (self.id != "Default"):
+            fish_catchable_in_area += filter_catchable_fish([loc for loc in game.location_objects["Default"].fish])
+        
+        # Sort the fish by precedence into fish_by_precedence
+        for catchable in fish_catchable_in_area:
+            key_precedence = str(catchable.precedence)
+            # Setup list for this if it doesn't exist yet
+            if key_precedence not in fish_by_precedence:
+                fish_by_precedence[key_precedence] = []
+            fish_by_precedence[key_precedence].append(catchable)
+
+    def get_composition(self):
+        """
+        Get some information about the location's sublocation compositions
+        """
         loc_dict:dict[str, dict[str, list[GameLocation]]] = {}
 
         # Go over each sublocation in the location and process *those* individually
-        sublocations = get_fish_into_subareas(self)
+        loc_dict["none"] = self.get_area_composition(None)
+
+        for area in self.areas:
+            area_data = self.get_area_composition(area)
+            # Empty, dont care about it
+            if area_data == {}:
+                continue
+            loc_dict[area] = area_data
+        
+        return loc_dict
+
+        """
         for sublocation in sublocations.keys():
 
-            fish_locations:list[FishLocation] = [e for e in sublocations[sublocation]]
-            # Everyone except default get a copy of default
-            catchables = get_subloc_fish_comp(fish_locations)
-            if (not len(catchables)):
-                continue # nothing catchable here except maybe trash, not worth reporting
-            if (self.id != "Default"):
-                catchables += get_subloc_fish_comp([loc for loc in game.location_objects["Default"].fish])
-            subloc_by_precedence:dict[str, list[FishLocation]] = {}
-            for c in catchables:
-                matching_key = str(c.precedence)
-                if matching_key not in subloc_by_precedence:
-                    subloc_by_precedence[matching_key] = []
-                subloc_by_precedence[matching_key].append(c)
-
-            loc_dict[sublocation] = subloc_by_precedence
+            fish_in_area:list[FishLocation] = [e for e in sublocations[sublocation]]
+            
         
         # Repack everything back into lists from precedence
         loc_dicts_refined:dict[str, list[FishLocation]] = {}
@@ -131,6 +173,7 @@ class GameLocation():
                 xp_list.append(sum_xp/len(fish.itemids))
 
         return loc_dicts_refined
+        """
 
 """
 """
@@ -511,24 +554,6 @@ def adjust_quality(quality, factor:int):
         if quality == config.QUALITY_IRIDIUM: return config.QUALITY_GOLD
         if quality > config.QUALITY_IRIDIUM: return config.QUALITY_GOLD
 
-
-def get_fish_into_subareas(location:GameLocation) -> dict[str, list[FishLocation]]:
-    """
-    Get the fish in the area keyed by the FishAreaId they have.
-    Any fish with null fish ID go into a subarea called "null".
-    Fish are excluded from any given list if they are:
-    """
-    # Handle custom keys, any location with a null key goes into "null". which i *know* is stupid but i donmt care
-    locations = {"null": []}
-    for key in location.areas:
-        locations[key] = []
-    for fish in location.fish:
-        if fish.fishareaid == None:
-            locations["null"].append(fish)
-        else:
-            locations[fish.fishareaid].append(fish)
-    return locations
-
 def get_condition(conditions:str|None, target) -> str|bool:
     """
     Gets a target condition from the comma-delimited string passed in.
@@ -554,7 +579,7 @@ def try_get_catchable(itemid:str) -> bool|CatchableData:
         # Passed, add to appropriate location
 """
 
-def get_subloc_fish_comp(subloc_fish:list[FishLocation]):
+def filter_catchable_fish(subloc_fish:list[FishLocation]):
     passed_fish:list[FishLocation] = []
     for fish_loc in subloc_fish:
         # Ignore one-time catchables (anything that sets flag on catch does this)
