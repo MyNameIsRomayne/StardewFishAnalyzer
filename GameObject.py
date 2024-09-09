@@ -16,28 +16,21 @@ import GameReader as gr
 from BaseObject import BaseObject
 from FurnitureObject import FurnitureObject
 from ProbsAlgorithm import get_probs
-
+from Player import Player
 
 class GameObject():
     
-    def __init__(self):
+    def __init__(self, player:Player = None):
         # Setup object data
         self.season = None
         self.weather = None
         self.time = None
+        self.player = (player) if (player != None) else (Player())
 
         self.base_objects:dict[str, BaseObject]           = gr.get_objects(config.objects_file,   config.objects_file_py,   BaseObject)
         self.fish_objects:dict[str, CatchableData]        = gr.get_objects(config.fish_file,      config.fish_file_py,      CatchableData)
         self.location_objects:dict[str, GameLocation]     = gr.get_objects(config.locations_file, config.locations_file_py, GameLocation)
-        self.furniture_objects:dict[str, FurnitureObject] = gr.get_objects(config.furniture_file, config.furniture_file_py, FurnitureObject)   
-
-    def set_season(self, season:str): self.season = season
-    def set_weather(self, weather:str): self.weather = weather
-    def set_time(self, time:int): self.time = time
-
-    def get_season(self): return self.season
-    def get_weather(self): return self.weather
-    def get_time(self): return self.time
+        self.furniture_objects:dict[str, FurnitureObject] = gr.get_objects(config.furniture_file, config.furniture_file_py, FurnitureObject)
 
     def post_init(self):
         """Handles the post-init phase, for creating associations between object classes after they are all initialized."""
@@ -62,12 +55,12 @@ class GameLocation():
 
             fish_locations:list[FishLocation] = [e for e in sublocations[sublocation]]
             # Everyone except default get a copy of default
-            catchables = get_subloc_fish_comp(fish_locations, game.get_season(), game.get_weather(), game.get_time())
+            catchables = get_subloc_fish_comp(fish_locations, game.season, game.weather, game.time)
             if (not len(catchables)):
                 continue # nothing catchable here except maybe trash, not worth reporting
             if (self.id != "Default"):
                 catchables += get_subloc_fish_comp([loc for loc in game.location_objects["Default"].fish],
-                                                   game.get_season(), game.get_weather(), game.get_time())
+                                                   game.season, game.weather, game.time)
             subloc_by_precedence:dict[str, list[FishLocation]] = {}
             for c in catchables:
                 matching_key = str(c.precedence)
@@ -105,7 +98,8 @@ class GameLocation():
                     fish_id = loc.itemids[0].id
                     if fish_id in game.fish_objects.keys():
                         fish_object = game.fish_objects[fish_id]
-                        specific_fish_chance = fish_object.get_average_chance()
+                        specific_fish_chance = fish_object.get_average_chance(water_depth=game.player.fishing_depth,
+                                                                              fishing_level=game.player.fishing_level)
                     chance_list.append(loc_chance * specific_fish_chance)
                 current_weights = get_probs(np.array(chance_list))
                 sum_current_weights = sum(current_weights)
@@ -306,7 +300,7 @@ class CatchableData():
                 max_val = 0.25
                 min_val = 0.08
                 chance = (max_val - min_val) / max_val * chance + (max_val - min_val) / 2
-        chance = (chance * 1.6) if (bait_targets_fish) else (chance)
+        chance = (chance * (4/3)) if (bait_targets_fish) else (chance)
         chance = (chance + daily_luck) if (apply_daily_luck) else (chance)
         if not len(chance_modifiers):
             return chance
@@ -334,38 +328,37 @@ class CatchableData():
     def has_subdata(self):
         return (self.id in game.fish_objects.keys())
 
-    def fish_satisfies_subdata(self, current_season, current_weather, current_time):
+    def fish_satisfies_subdata(self):
         # Satisfies by default if is trap/not in fish data
         if not self.has_subdata():
             return True
-        fish_raw_data = str(game.fish_objects[self.id]).split("/")
-        if fish_raw_data[1] == "trap":
+        if self.is_trap():
             return True
-        # Check time
-        INDEX_TIME_DATA = 5
-        INDEX_SEASONS = 6
-        times = fish_raw_data[INDEX_TIME_DATA].split(" ")
-        # 1 2 3 4 is two checks for between 1 and 2, or between 3 and 4
-        amt_intervals = int(len(times)/2)
+        # Check time. 1 2 3 4 is two checks for between 1 and 2, or between 3 and 4
+        amt_intervals = int(len(self.catch_time)/2)
         passed_any_interval = False
         for interval in range(amt_intervals):
-            interval_start = int(times[(interval * 2) + 0])
-            interval_end = int(times[(interval * 2) + 1])
+            interval_start = int(self.catch_time[(interval * 2) + 0])
+            interval_end = int(self.catch_time[(interval * 2) + 1])
             # Inclusive, time may equal start time
-            if current_time < interval_start:
+            if game.time < interval_start:
                 continue
             # Exclusive, time may not equal end time
-            if current_time >= interval_end:
+            if game.time >= interval_end:
                 continue
             passed_any_interval = True
             break
         if not passed_any_interval:
             return False
-        # Checks for time over, check season
-        seasons = fish_raw_data[INDEX_SEASONS].split(" ")
-        if current_season not in seasons:
+        # Seasons are unused, weather is still used
+        if self.weather == "both":
+            # Any weather, I guess? greenRain is new but idk.
+            return True
+        elif self.weather != game.weather:
             return False
-        return True
+        else:
+            # weather == game weather
+            return True
 
 # Static functions (helpers)
 
@@ -552,8 +545,8 @@ def get_subloc_fish_comp(subloc_fish:list[FishLocation], season:str=None, weathe
         if (None in fish_loc.itemids):
             continue
         # Filter for Data/Fish
-        presumed_fish = try_get_catchable(fish_loc.itemids[0])
-        if (presumed_fish) and (not fish_loc.ignoresubdata) and (not presumed_fish.fish_satisfies_subdata(season, weather, time)):
+        presumed_fish = try_get_catchable(fish_loc.itemids[0].id)
+        if (presumed_fish) and (not fish_loc.ignoresubdata) and (not presumed_fish.fish_satisfies_subdata()):
                 continue
         # Filter magic bait
         if (fish_loc.requiremagicbait) and (not usingMagicBait):
@@ -562,7 +555,7 @@ def get_subloc_fish_comp(subloc_fish:list[FishLocation], season:str=None, weathe
         if (season != None):
             season_lowercase = season.lower()
             # The season param is one thing, but the conditions also need parsing to check for LOCATION_SEASON
-            if ((fish_loc.season != None) and (fish_loc.season != season)):
+            if (season_lowercase != season):
                 continue
             # "LOCATION_SEASON Here spring fall" fuckin why
             condition_season = get_condition(fish_loc.condition, "LOCATION_SEASON")
