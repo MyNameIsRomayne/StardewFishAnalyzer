@@ -17,6 +17,12 @@ FISHING_ROD_FIBERGLASS  = "fiberglass"
 FISHING_ROD_IRIDIUM     = "iridium"
 FISHING_ROD_MASTERY     = "iridium+"
 
+FISHING_LURE_NONE       = "none"
+FISHING_LURE_CURIOSITY  = "curiosity"
+
+FISHING_BAIT_NONE       = "none"
+FISHING_BAIT_TARGETED   = "targeted"
+
 QUALITY_NORMAL = 0
 QUALITY_SILVER = 1
 QUALITY_GOLD = 2

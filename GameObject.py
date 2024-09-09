@@ -298,9 +298,7 @@ class CatchableData():
             return config.QUALITY_SILVER
         return config.QUALITY_GOLD
 
-    def get_average_chance(self, is_training_rod=False,
-                           curiosity_lure=False, bait_targets_fish=False,
-                           location_data:FishLocation=None):
+    def get_average_chance(self, location_data:FishLocation=None):
         """
         Gets the average chance that this particular fish should be caught, given some parameters.
         Namely, it uses the same exact calculations found in GameLocation.cs, line 13937-13974.
@@ -311,9 +309,12 @@ class CatchableData():
         chance_mode         = "stack" # default
         chance_modifiers    = None
         curiosity_lure_buff = 0
-        fishing_level = game.player.fishing_level
-        water_depth   = game.player.fishing_depth
-        is_training_rod = game.player.fishing_rod == config.FISHING_ROD_TRAINING
+        fishing_level       = game.player.fishing_level
+        water_depth         = game.player.fishing_depth
+        is_training_rod     = (game.player.fishing_rod == config.FISHING_ROD_TRAINING)
+        curiosity_lure      = (game.player.lure == config.FISHING_LURE_CURIOSITY)
+        bait_targets_fish   = (game.player.bait == config.FISHING_BAIT_TARGETED
+                               and game.player.bait_target_id == self.id)
 
         if location_data != None:
             chance_mode         = location_data.chancemodifiermode

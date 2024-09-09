@@ -12,6 +12,7 @@ class Player():
         self.fishing_level = 1
         self.pct_perfect = 0
         self.fishing_depth = 1
-        self.bait = None
+        self.bait = config.FISHING_BAIT_NONE
         self.bait_target_id = None
         self.fishing_rod = config.FISHING_ROD_BAMBOO
+        self.lure = config.FISHING_LURE_NONE
