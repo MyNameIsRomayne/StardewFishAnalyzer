@@ -26,6 +26,7 @@ class GameObject():
         self.weather = None
         self.time = None
         self.player = (player) if (player != None) else (Player())
+        self.daily_luck = 0
 
         self.base_objects:dict[str, BaseObject]           = gr.get_objects(config.objects_file,   config.objects_file_py,   BaseObject)
         self.fish_objects:dict[str, CatchableData]        = gr.get_objects(config.fish_file,      config.fish_file_py,      CatchableData)
@@ -297,21 +298,28 @@ class CatchableData():
             return config.QUALITY_SILVER
         return config.QUALITY_GOLD
 
-    def get_average_chance(self, water_depth=4, fishing_level=6, is_training_rod=False,
-                           curiosity_lure=False, curiosity_lure_buff=0, bait_targets_fish=False,
-                           apply_daily_luck=False, daily_luck=0, location_data:FishLocation=None):
+    def get_average_chance(self, is_training_rod=False,
+                           curiosity_lure=False, bait_targets_fish=False,
+                           location_data:FishLocation=None):
         """
         Gets the average chance that this particular fish should be caught, given some parameters.
         Namely, it uses the same exact calculations found in GameLocation.cs, line 13937-13974.
         """
 
         # Handle using location data, if applicable
-        chance_mode = "stack" # default
-        chance_modifiers = None
+        apply_daily_luck    = False
+        chance_mode         = "stack" # default
+        chance_modifiers    = None
+        curiosity_lure_buff = 0
+        fishing_level = game.player.fishing_level
+        water_depth   = game.player.fishing_depth
+        is_training_rod = game.player.fishing_rod == config.FISHING_ROD_TRAINING
+
         if location_data != None:
-            chance_mode = location_data.chancemodifiermode
-            chance_modifiers = location_data.chancemodifiers
-            location_data
+            chance_mode         = location_data.chancemodifiermode
+            chance_modifiers    = location_data.chancemodifiers
+            apply_daily_luck    = location_data.apply_daily_luck
+            curiosity_lure_buff = location_data.curiosity_lure_buff
 
         if self.is_trap(): return self.chance
 
@@ -329,7 +337,7 @@ class CatchableData():
                 min_val = 0.08
                 chance = (max_val - min_val) / max_val * chance + (max_val - min_val) / 2
         chance = (chance * (4/3)) if (bait_targets_fish) else (chance)
-        chance = (chance + daily_luck) if (apply_daily_luck) else (chance)
+        chance = (chance + game.daily_luck) if (apply_daily_luck) else (chance)
         if (chance_modifiers == None) or (not len(chance_modifiers)):
             return chance
         return apply_chance_modifiers(chance, chance_modifiers, chance_mode)

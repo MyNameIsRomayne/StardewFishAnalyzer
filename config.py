@@ -11,6 +11,12 @@ from util import Path, read_file_json, ensure_file_exists
 # This reduces file size / ever so slightly increases load speed
 IGNORE_IRRELEVANT_JSON = True
 
+FISHING_ROD_TRAINING    = "training"
+FISHING_ROD_BAMBOO      = "normal"
+FISHING_ROD_FIBERGLASS  = "fiberglass"
+FISHING_ROD_IRIDIUM     = "iridium"
+FISHING_ROD_MASTERY     = "iridium+"
+
 QUALITY_NORMAL = 0
 QUALITY_SILVER = 1
 QUALITY_GOLD = 2
