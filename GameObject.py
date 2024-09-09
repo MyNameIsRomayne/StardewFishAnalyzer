@@ -56,12 +56,11 @@ class GameLocation():
 
             fish_locations:list[FishLocation] = [e for e in sublocations[sublocation]]
             # Everyone except default get a copy of default
-            catchables = get_subloc_fish_comp(fish_locations, game.season, game.weather, game.time)
+            catchables = get_subloc_fish_comp(fish_locations)
             if (not len(catchables)):
                 continue # nothing catchable here except maybe trash, not worth reporting
             if (self.id != "Default"):
-                catchables += get_subloc_fish_comp([loc for loc in game.location_objects["Default"].fish],
-                                                   game.season, game.weather, game.time)
+                catchables += get_subloc_fish_comp([loc for loc in game.location_objects["Default"].fish])
             subloc_by_precedence:dict[str, list[FishLocation]] = {}
             for c in catchables:
                 matching_key = str(c.precedence)
@@ -555,7 +554,7 @@ def try_get_catchable(itemid:str) -> bool|CatchableData:
         # Passed, add to appropriate location
 """
 
-def get_subloc_fish_comp(subloc_fish:list[FishLocation], season:str=None, weather:str=None, time:int=None, usingMagicBait:bool=False):
+def get_subloc_fish_comp(subloc_fish:list[FishLocation]):
     passed_fish:list[FishLocation] = []
     for fish_loc in subloc_fish:
         # Ignore one-time catchables (anything that sets flag on catch does this)
@@ -584,33 +583,29 @@ def get_subloc_fish_comp(subloc_fish:list[FishLocation], season:str=None, weathe
         if (presumed_fish) and (not fish_loc.ignoresubdata) and (not presumed_fish.fish_satisfies_subdata()):
                 continue
         # Filter magic bait
-        if (fish_loc.requiremagicbait) and (not usingMagicBait):
+        if (fish_loc.requiremagicbait) and (not game.player.bait == config.FISHING_BAIT_MAGIC):
             continue
-        # Filter by season
-        if (season != None):
-            season_lowercase = season.lower()
-            # The season param is one thing, but the conditions also need parsing to check for LOCATION_SEASON
-            if (season_lowercase != game.season):
+        # Filter by season (none in season param means any season)
+        if (fish_loc.season != None) and (str(fish_loc.season).lower() != game.season):
+            continue
+        # The season param is one thing, but the conditions also need parsing to check for LOCATION_SEASON (grr)
+        # "LOCATION_SEASON Here spring fall" fuckin why
+        condition_season = get_condition(fish_loc.condition, "LOCATION_SEASON")
+        if condition_season != False:
+            # Get all arguments as lowercase strings. helps for case-insensitive season checking.
+            tokens = [str(token).lower() for token in condition_season.split(" ")]
+            # It should look something like ["location_season", "here", "spring", "fall"] now
+            if (game.season not in tokens):
                 continue
-            # "LOCATION_SEASON Here spring fall" fuckin why
-            condition_season = get_condition(fish_loc.condition, "LOCATION_SEASON")
-            if condition_season != False:
-                # Get all arguments as lowercase strings. helps for case-insensitive season checking.
-                tokens = [str(token).lower() for token in condition_season.split(" ")]
-                # It should look something like ["location_season", "here", "spring", "fall"] now
-                if season_lowercase not in tokens:
-                    continue
-        # Filter by weather
-        if (weather != None):
-            weather_lowercase = weather.lower()
-            # WEATHER Here Rain Storm
-            condition_weather = get_condition(fish_loc.condition, "WEATHER")
-            if condition_weather != False:
-                # Get all arguments as lowercase strings. helps for case-insensitive season checking.
-                tokens = [str(token).lower() for token in condition_season.split(" ")]
-                # It should look something like ["weather", "here", "rain", "storm"] now
-                if weather_lowercase not in tokens:
-                    continue
+        # Filter by weather is done in fish_satisfies_subdata for the most part
+        # WEATHER Here Rain Storm (this is used literally ONE time for legendary fish.)
+        condition_weather = get_condition(fish_loc.condition, "WEATHER")
+        if condition_weather != False:
+            # Get all arguments as lowercase strings. helps for case-insensitive season checking.
+            tokens = [str(token).lower() for token in condition_season.split(" ")]
+            # It should look something like ["weather", "here", "rain", "storm"] now
+            if game.weather not in tokens:
+                continue
         # Filter by time is done in fish_satisfies_subdata
         # Filtering complete by location/season/weather/time, add as one of those which pass
         passed_fish.append(fish_loc)
