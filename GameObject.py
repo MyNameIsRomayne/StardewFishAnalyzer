@@ -144,33 +144,33 @@ class FishLocation():
         self.chance                   = json_data["Chance"]
         self.season                   = json_data["Season"]
         self.fishareaid               = json_data["FishAreaId"]
-        self.precedence               = json_data["Precedence"]
+        self.min_fishing_level        = json_data["MinFishingLevel"]
+        self.apply_daily_luck         = json_data["ApplyDailyLuck"]
+        self.curiosity_lure_buff      = json_data["CuriosityLureBuff"]
+        self.specific_bait_buff       = json_data["SpecificBaitBuff"]
+        self.specific_bait_multiplier = json_data["SpecificBaitMultiplier"]
         self.isbossfish               = json_data["IsBossFish"]
-        self.set_flag_on_catch        = json_data["SetFlagOnCatch"]
         self.requiremagicbait         = json_data["RequireMagicBait"]
+        self.min_distance_from_shore  = json_data["MinDistanceFromShore"]
+        self.max_distance_from_shore  = json_data["MaxDistanceFromShore"]
+        self.precedence               = json_data["Precedence"]
+        self.ignoresubdata            = json_data["IgnoreFishDataRequirements"]
+        self.can_be_inherited         = json_data["CanBeInherited"]
+        self.set_flag_on_catch        = json_data["SetFlagOnCatch"]
         self.chancemodifiers          = json_data["ChanceModifiers"]
         self.chancemodifiermode       = json_data["ChanceModifierMode"]
         self.chanceboostperlucklevel  = json_data["ChanceBoostPerLuckLevel"]
         self.quality                  = json_data["Quality"]
         self.condition                = json_data["Condition"]
-        self.ignoresubdata            = json_data["IgnoreFishDataRequirements"]
 
         self.itemids:list[BaseObject] = parse_item_ids(json_data)
     
         if not config.IGNORE_IRRELEVANT_JSON: return
             
-        self.bobber_position            = json_data["BobberPosition"]
-        self.player_position            = json_data["PlayerPosition"]
-        self.min_fishing_level          = json_data["MinFishingLevel"]
-        self.apply_daily_luck:bool      = bool(json_data["ApplyDailyLuck"])
-        self.curiosity_lure_buff        = json_data["CuriosityLureBuff"]
-        self.specific_bait_buff         = json_data["SpecificBaitBuff"]
-        self.specific_bait_multiplier   = json_data["SpecificBaitMultiplier"]
-        self.catch_limit                = json_data["CatchLimit"]
-        self.can_use_training_rod       = json_data["CanUseTrainingRod"]
-        self.min_distance_from_shore    = json_data["MinDistanceFromShore"]
-        self.max_distance_from_shore    = json_data["MaxDistanceFromShore"]
-        self.can_be_inherited           = json_data["CanBeInherited"]
+        self.bobber_position          = json_data["BobberPosition"]
+        self.player_position          = json_data["PlayerPosition"]
+        self.catch_limit              = json_data["CatchLimit"]
+        self.can_use_training_rod     = json_data["CanUseTrainingRod"]
     
     def __str__(self):
         return self.itemids[0].name
