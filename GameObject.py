@@ -99,9 +99,7 @@ class GameLocation():
                     fish_id = loc.itemids[0].id
                     if fish_id in game.fish_objects.keys():
                         fish_object = game.fish_objects[fish_id]
-                        specific_fish_chance = fish_object.get_average_chance(water_depth=game.player.fishing_depth,
-                                                                              fishing_level=game.player.fishing_level,
-                                                                              location_data=loc)
+                        specific_fish_chance = fish_object.get_average_chance(loc)
                     chance_list.append(loc_chance * specific_fish_chance)
                 current_weights = get_probs(np.array(chance_list))
                 sum_current_weights = sum(current_weights)
