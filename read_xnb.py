@@ -33,15 +33,15 @@ def main():
     print('')
     # Setup some internal config
     SHOW_FISH = True
-    FISHING_LEVEL = 2
-    SEASON = config.SEASON_SUMMER
+    FISHING_LEVEL = 10
+    SEASON = config.SEASON_SPRING
     WEATHER = config.WEATHER_SUNNY
-    TIME = classic_to_internal("1:23PM")
+    TIME = classic_to_internal("7:50AM")
     LOCATIONS = [config.LOCATION_BEACH]
-    SCALE_PCT_PERFECT_CATCHES = 0.5
-    ROD_USED = config.FISHING_ROD_BAMBOO
+    SCALE_PCT_PERFECT_CATCHES = 1
+    ROD_USED = config.FISHING_ROD_FIBERGLASS
     BAIT_USED = config.FISHING_BAIT_TARGETED
-    BAIT_TARGET_ID = "128" # pufferfish
+    BAIT_TARGET_ID = "131" # sardine
     WATER_DEPTH = 4
     # Act upon above info
     game.post_init()
@@ -78,10 +78,12 @@ def main():
         location_name = LOCATIONS[iter]
         for sublocation in location:
             # Get format data & average XP/Coin data
-            subloc_blurb = f" ({sublocation})" if (sublocation != "null" and sublocation != location) else ""
-            proportional_xp = [ratio * xp for ratio, xp in zip(location[sublocation]["weights"], location[sublocation]["xp"])]
+            if location[sublocation] == None:
+                continue
+            subloc_blurb = f" ({sublocation})" if (sublocation != "none" and sublocation != location) else ""
+            proportional_xp = [ratio * xp for ratio, xp in zip(location[sublocation]["chances"], location[sublocation]["xp"])]
             avg_xp = round( sum(proportional_xp), 2 )
-            proportional_coins = [ratio * coins for ratio, coins in zip(location[sublocation]["weights"], location[sublocation]["coins"])]
+            proportional_coins = [ratio * coins for ratio, coins in zip(location[sublocation]["chances"], location[sublocation]["coins"])]
             avg_coin = round( sum(proportional_coins), 2 )
             # Add location summary data to location data
             location_data = [""]*row_len
@@ -95,7 +97,7 @@ def main():
             # Add location data for each fish
             for i, fish in enumerate(location[sublocation]["fish"]):
                 names = ", ".join([obj.name for obj in fish.itemids])
-                proportion  = location[sublocation]["weights"][i]
+                proportion  = location[sublocation]["chances"][i]
                 proportion  = f"{round(proportion*100, 2)}%".rjust(6, " ")
                 subloc_coin = location[sublocation]["coins"][i]
                 subloc_xp   = location[sublocation]["xp"][i]
