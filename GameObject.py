@@ -82,11 +82,82 @@ class GameLocation():
         
         # Sort the fish by precedence into fish_by_precedence
         for catchable in fish_catchable_in_area:
-            key_precedence = str(catchable.precedence)
+            group = str(catchable.precedence)
             # Setup list for this if it doesn't exist yet
-            if key_precedence not in fish_by_precedence:
-                fish_by_precedence[key_precedence] = []
-            fish_by_precedence[key_precedence].append(catchable)
+            if group not in fish_by_precedence:
+                fish_by_precedence[group] = []
+            fish_by_precedence[group].append(catchable)
+        
+        # Ensure we go through the precedence groups as the game would (low to hi)
+        precedence_groups = [int(e) for e in fish_by_precedence.keys()]
+        precedence_groups.sort()
+        precedence_groups = [str(e) for e in precedence_groups]
+
+        composition_data:dict[str, list] = {
+            "fish"    : fish_catchable_in_area,
+            "chances" : [],
+            "xp"      : [],
+            "coins"   : []
+        }
+
+        # Variables for easy reference to the above
+        chances_list:list[float]     = composition_data["chances"]
+        xp_list:list[float]          = composition_data["xp"]
+        coins_list:list[float]       = composition_data["coins"]
+
+        # Keep a running total of how likely it is we get to the current 
+        chance_pass_all_previous = 1
+
+        using_targeted_bait = game.player.bait == config.FISHING_BAIT_TARGETED
+        targeted_bait_id = game.player.bait_target_id
+
+        # Get the chance for each fish within a precedence group
+        for group in precedence_groups:
+            chance_list = [] # temporary storage for the chance of each fish in the group
+            target_fish_index = None # index of our targeted fish, if we have one in here
+            for index, fish_loc in enumerate(fish_by_precedence[group]):
+                if (fish_loc.itemids[0].id == targeted_bait_id):
+                    target_fish_index = index
+                specific_fish_chance = 1
+                fish_id = fish_loc.itemids[0].id
+                if fish_id in game.fish_objects.keys():
+                    fish_object = game.fish_objects[fish_id]
+                    specific_fish_chance = fish_object.get_average_chance(fish_loc)
+                chance_list.append(fish_loc.chance * specific_fish_chance)
+            
+            if ((using_targeted_bait) and (target_fish_index != None)):
+                current_weights = get_probs_with_target(np.array(chance_list), target=target_fish_index, rerolls=2)
+            else:
+                # Normal weights with untargeted bait. Also targeted bait with fish not in this segment (it has the same result)
+                current_weights = get_probs(np.array(chance_list))
+            sum_current_weights = sum(current_weights)
+            reduced_weights = [weight * chance_pass_all_previous for weight in current_weights]
+
+            chances_list += reduced_weights
+            chance_pass_all_previous *= (1 - sum_current_weights)
+    
+            # Add price/xp stats
+            for fish in fish_by_precedence[group]:
+                sum_coins = 0
+                sum_xp = 0
+                # Handle getting all the objects to use
+                for loot_id in [obj.id for obj in fish.itemids]:
+                    value, xp = 0, 3
+                    # Coins might be yoinkable from here first if it isnt a fish
+                    if loot_id in game.base_objects.keys():
+                        value = game.base_objects[loot_id].price
+                    # If it is, we can get coins AND xp
+                    if loot_id in game.fish_objects.keys():
+                        value = game.fish_objects[loot_id].get_average_value()
+                        xp = game.fish_objects[loot_id].get_average_xp()
+                    # Finally, add it to the sum
+                    sum_coins += value
+                    sum_xp += xp
+                # Got all the catchables, add relevant data to lists
+                coins_list.append(sum_coins/len(fish.itemids))
+                xp_list.append(sum_xp/len(fish.itemids))
+            
+        return composition_data
 
     def get_composition(self):
         """
@@ -117,60 +188,7 @@ class GameLocation():
         loc_dicts_refined = {}
         for sub_loc_key in loc_dict.keys():
             loc_dicts_refined[sub_loc_key] = {}
-            precedence_markers = [int(e) for e in loc_dict[sub_loc_key]]
-            precedence_markers.sort()
-            # Setup initial lists for subloc
-            loc_dicts_refined[sub_loc_key]["weights"] = []
-            loc_dicts_refined[sub_loc_key]["fish"] = []
-            loc_dicts_refined[sub_loc_key]["xp"] = []
-            loc_dicts_refined[sub_loc_key]["coins"] = []
-            # This is just for ease of reading
-            fish_list:list = loc_dicts_refined[sub_loc_key]["fish"]
-            weights_list:list = loc_dicts_refined[sub_loc_key]["weights"]
-            chance_fail_all_previous = 1
-            for marker in precedence_markers:
-                marker = str(marker)
-                fish_list += loc_dict[sub_loc_key][marker]
-                chance_list = []
-                for loc in loc_dict[sub_loc_key][marker]:
-                    loc:FishLocation
-                    loc_chance = loc.chance
-                    # Yes, it also calculates this. ugh..
-                    specific_fish_chance = 1
-                    fish_id = loc.itemids[0].id
-                    if fish_id in game.fish_objects.keys():
-                        fish_object = game.fish_objects[fish_id]
-                        specific_fish_chance = fish_object.get_average_chance(loc)
-                    chance_list.append(loc_chance * specific_fish_chance)
-                current_weights = get_probs(np.array(chance_list))
-                sum_current_weights = sum(current_weights)
-                reduced_weights = [weight * chance_fail_all_previous for weight in current_weights]
-                weights_list += reduced_weights
-                chance_fail_all_previous *= (1 - sum_current_weights)
-    
-            # Add price/xp stats
-            coins_list:list = loc_dicts_refined[sub_loc_key]["coins"]
-            xp_list:list = loc_dicts_refined[sub_loc_key]["xp"]
-            for fish in loc_dicts_refined[sub_loc_key]["fish"]:
-                fish:FishLocation
-                sum_coins = 0
-                sum_xp = 0
-                # Handle getting all the objects to use
-                for loot_id in [obj.id for obj in fish.itemids]:
-                    value, xp = 0, 3
-                    # Coins might be yoinkable from here first if it isnt a fish
-                    if loot_id in game.base_objects.keys():
-                        value = game.base_objects[loot_id].price
-                    # If it is, we can get coins AND xp
-                    if loot_id in game.fish_objects.keys():
-                        value = game.fish_objects[loot_id].get_average_value()
-                        xp = game.fish_objects[loot_id].get_average_xp()
-                    # Finally, add it to the sum
-                    sum_coins += value
-                    sum_xp += xp
-                # Got all the catchables, add relevant data to lists
-                coins_list.append(sum_coins/len(fish.itemids))
-                xp_list.append(sum_xp/len(fish.itemids))
+            
 
         return loc_dicts_refined
         """
