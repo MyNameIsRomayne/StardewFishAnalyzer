@@ -15,7 +15,7 @@ import config
 import GameReader as gr
 from BaseObject import BaseObject
 from FurnitureObject import FurnitureObject
-from ProbsAlgorithm import get_probs
+from ProbsAlgorithm import get_probs, get_probs_with_target
 from Player import Player
 
 class GameObject():
