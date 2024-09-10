@@ -151,6 +151,7 @@ def profile(func, *args, **kwargs) -> float:
 
 def format2DListAsTable(l_2d:list[str], char_limit:int=900, column_delimiter="|") -> str:
     """Pass in a square 2D list, get out a large f-string representing a neat table"""
+    if not len(l_2d): return ""
     amount_columns = len(l_2d[0]) # assume square
     length_columns = [0]*amount_columns
     # Get largest index out of each column
