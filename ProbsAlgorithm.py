@@ -36,16 +36,22 @@ def get_probs(prob_list:np.ndarray):
     That being said, this gets the average chance elements in prob_list at any position n
     will succeed, given that prob_list is shuffled randomly.
     """
+
     if len(prob_list) >= 9:
         print(f"WARN: Prob list of length {len(prob_list)} entered into get_probs, this will take a while!")
     elif len(prob_list) > 10:
         raise TimeoutError("I refuse to let you take what will be approximately 5 minutes for this.")
+
+    # Helper var to reduce the amount of times prob_list needs to be inverted
+    prob_list_inverted = 1 - prob_list
     
+    if len(prob_list) < 7:
+        # Below 5, its reasonable to just use the current process rather than deal with multiprocessing overhead
+        return process_permutation(prob_list, prob_list_inverted, itertools.permutations(range(len(prob_list))))
+
     # Setup variables before sending off the worker processes
     # Final collection list for the results
     sum_probs = [0]*len(prob_list)
-    # Helper var to reduce the amount of times prob_list needs to be inverted
-    prob_list_inverted = 1 - prob_list
     total_permutations = factorial(len(prob_list))
     # Amount of processes should exceed total cores here
     use_cores = 12
@@ -77,8 +83,10 @@ def get_subsets(nparray, sublen):
             continue
         yield nparray[i:i+sublen]
 
+# Test for limits
 if __name__ == "__main__":
     import time
-    start = time.perf_counter()
-    print(get_probs(np.array([0.25, 0.5, 1, 0.25, 0.5, 1, 0.25, 0.5, 1, 0.25])))
-    print(time.perf_counter() - start)
+    for j in range(11):
+        start = time.perf_counter()
+        get_probs(np.array([0.25]*j))
+        print(f"{j}: {time.perf_counter() - start}")
