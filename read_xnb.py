@@ -33,16 +33,16 @@ def main():
     print('')
     # Setup some internal config
     SHOW_FISH = True
-    FISHING_LEVEL = 10
-    SEASON = config.SEASON_SPRING
+    FISHING_LEVEL = 8
+    SEASON = config.SEASON_SUMMER
     WEATHER = config.WEATHER_SUNNY
-    TIME = classic_to_internal("7:50AM")
-    LOCATIONS = [config.LOCATION_BEACH]
+    TIME = classic_to_internal("7:00AM")
+    LOCATIONS = [config.LOCATION_BEACH, config.LOCATION_FOREST, config.LOCATION_TOWN, config.LOCATION_MOUNTAIN]
     SCALE_PCT_PERFECT_CATCHES = 1
-    ROD_USED = config.FISHING_ROD_FIBERGLASS
-    BAIT_USED = config.FISHING_BAIT_TARGETED
+    ROD_USED = config.FISHING_ROD_IRIDIUM
+    BAIT_USED = config.FISHING_BAIT_NONE
     BAIT_TARGET_ID = "131" # sardine
-    WATER_DEPTH = 4
+    WATER_DEPTH = 5 # zone (0, 1, 2, 3, 5)
     # Act upon above info
     game.post_init()
     game.season = SEASON

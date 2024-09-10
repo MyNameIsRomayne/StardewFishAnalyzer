@@ -348,7 +348,7 @@ class CatchableData():
         elif size < 0.66: return config.QUALITY_SILVER
         else:             return config.QUALITY_GOLD
 
-    def get_quality_proportions(self) -> int:
+    def get_quality_proportions(self) -> dict[int, float]:
         """
         Gets the percent of fish that should be of a certain quality. It returns in the order of 
         QUALITY_NORMAL, QUALITY_SILVER, QUALITY_GOLD, QUALITY_IRIDIUM as (float, float, float, float).
@@ -439,18 +439,24 @@ class CatchableData():
             return chance
         return apply_chance_modifiers(chance, chance_modifiers, chance_mode)
 
-    def get_average_value(self, fish_quality:int = None, skill_bonus = config.SKILL_NONE):
-        fish_quality = self.get_quality_proportions() if (fish_quality == None) else fish_quality
+    def get_average_value(self, skill_bonus = config.SKILL_NONE):
+        fish_quality = self.get_quality_proportions()
         base_price = self.fish_object.price
-        final_price = scale_price_by_quality(base_price, fish_quality)
+        scaled_final_prices = []
+        for quality in fish_quality.keys():
+            scaled_final_prices.append(scale_price_by_quality(base_price, quality) * fish_quality[quality])
+        final_price = sum(scaled_final_prices)
         return floor(final_price * skill_bonus)
     
-    def get_average_xp(self, fish_quality:int = None, treasure = False):
+    def get_average_xp(self, treasure = False):
         # https://stardewvalleywiki.com/Fishing#Experience_Points 1.6.8
         if self.is_trap(): return 5 # Crab pots always net 5xp, no matter what
 
-        fish_quality = self.get_quality_proportions() if (fish_quality == None) else fish_quality
-        resultant_xp = floor((fish_quality + 1) * 3)
+        fish_quality = self.get_quality_proportions()
+        scaled_quality_xp = []
+        for quality in fish_quality.keys():
+            scaled_quality_xp.append( floor((quality + 1) * 3 * fish_quality[quality]) )
+        resultant_xp = sum(scaled_quality_xp)
         resultant_xp = floor(resultant_xp + (float(self.difficulty) / 3))
         # Handle proportional adjustment to XP gains
         perfect_xp = 2.4 * game.player.pct_perfect
