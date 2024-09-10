@@ -73,6 +73,9 @@ def get_probs(prob_list:np.ndarray):
 
     return sum_probs
 
+def get_probs_with_target(prob_list:np.ndarray, target_index:int, max_rerolls:int = 2):
+    raise NotImplementedError
+
 def get_subsets(nparray, sublen):
     """(Buggy, unused) get the subsets of some nparray by sublen."""
     limit = len(nparray) - sublen
