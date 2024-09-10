@@ -177,25 +177,6 @@ class GameLocation():
         
         return loc_dict
 
-        """
-        for sublocation in sublocations.keys():
-
-            fish_in_area:list[FishLocation] = [e for e in sublocations[sublocation]]
-            
-        
-        # Repack everything back into lists from precedence
-        loc_dicts_refined:dict[str, list[FishLocation]] = {}
-        loc_dicts_refined = {}
-        for sub_loc_key in loc_dict.keys():
-            loc_dicts_refined[sub_loc_key] = {}
-            
-
-        return loc_dicts_refined
-        """
-
-"""
-"""
-
 class FishLocation():
     
     def __init__(self, json_data:dict):
@@ -336,25 +317,82 @@ class CatchableData():
         """Gets whether this fish is a legendary fish."""
         return (self.fish_object.context_tags != None) and ("fish_legendary" in self.fish_object.context_tags)
 
-    def get_average_size(self, fishing_zone = 4, fishing_skill = 10) -> float:
-        """Gets the average size of this fish, dependent on the fishing zone and fishing skill."""
-        # fishSize = Zone/5 * (Skill+2)/10 * Random/100
-        # For the sake of "Average", random will be 50
-        AVERAGE_RANDOM = 50
-        return (fishing_zone/5) * (fishing_skill+2)/10 * AVERAGE_RANDOM/100
+    def get_fish_size_ranges(self) -> tuple[float, float]:
+        """
+        Gets the range of sizes this fish may be within for the current player conditions.
+        """
+        """
+        Ok now that the doc comment is over, dev's note: i hate this. it was supposed to just be
+        (fishing_zone/5) * (fishing_skill+2)/10 * AVERAGE_RANDOM/100 (avg_random = 1) but NOOO
+        it has to be all COMPLICATED and now we need the proprotions of shit. oh my goddd
+        AND WAIT IT GETS WORSE BECAUSE THE WIKI IS WRONG!!!
+        its not skill+2 /10, its RAND(min(5, floor(skill+2/10)), 5) / 5f (rand is inclusive)
+        basically this whole function is just me coping with [worst_case*range*worst_case, best_case*range*best_case]
+        """
+        # Level contributions to fish size
+        min_level_contribution = 1 + floor(game.player.fishing_level / 2)
+        max_level_contribution = max(6, min_level_contribution) / 5
+        min_level_contribution /= 5
+        # RNG contributions to fish size
+        min_rng_contribution = 0.9
+        max_rng_contribution = 1.1
+        # Zone contribution to fish size
+        baseFishSize = (game.player.fishing_depth/5)
+        # Min/max size based off worst/best case scenarios
+        minFishSize, maxFishSize = (min_level_contribution * baseFishSize * min_rng_contribution), (max_level_contribution * baseFishSize * max_rng_contribution)
+        return minFishSize, maxFishSize
 
-    def get_average_quality(self) -> int:
+    def get_absolute_fish_quality(self, size:float) -> int:
+        """Internal helper function, gets the quality of some size."""
+        if   size < 0.33: return config.QUALITY_NORMAL
+        elif size < 0.66: return config.QUALITY_SILVER
+        else:             return config.QUALITY_GOLD
+
+    def get_quality_proportions(self) -> int:
         """
-        Get the average quality of the fish, depending on its size.
-        This will be an exact quality based off the average size,
-        so as far as getting average price goes it may be slightly skewed.
+        Gets the percent of fish that should be of a certain quality. It returns in the order of 
+        QUALITY_NORMAL, QUALITY_SILVER, QUALITY_GOLD, QUALITY_IRIDIUM as (float, float, float, float).
         """
-        size = self.get_average_size()
-        if size < 0.33:
-            return config.QUALITY_NORMAL
-        if size < 0.66:
-            return config.QUALITY_SILVER
-        return config.QUALITY_GOLD
+        qualities = {
+            config.QUALITY_NORMAL  : 0,
+            config.QUALITY_SILVER  : 0,
+            config.QUALITY_GOLD    : 0,
+            config.QUALITY_IRIDIUM : 0
+        }
+        min_size, max_size = self.get_fish_size_ranges()
+        min_quality, max_quality = self.get_absolute_fish_quality(min_size), self.get_absolute_fish_quality(max_size)
+        if min_quality == max_quality:
+            # shortcuts~
+            qualities[min_quality] = 1
+        else:
+            # no shortcut :(
+            bounds = [
+                [-9999, 0.33],
+                [0.33,  0.66],
+                [0.66,  9999]
+            ]
+            size_range = max_size - min_size
+            for iter, bounds in enumerate(bounds):
+                # For the sake of normal/silver/gold, we can couple iter to quality
+                bounds_min, bounds_max = bounds
+                a = min(max_size, bounds_max)
+                b = max(min_size, bounds_min)
+                qualities[iter] = max(0, (a - b) / size_range)
+
+        if game.player.pct_perfect == 0:
+            return qualities # because yuss
+        
+        # only silver/gold get quality increases like this, so its sane to handle manually
+        # split proportion of perfects from gold
+        split_from_gold = qualities[config.QUALITY_GOLD] * game.player.pct_perfect
+        qualities[config.QUALITY_GOLD] -= split_from_gold
+        # split proportion of perfects from silver
+        split_from_silver = qualities[config.QUALITY_SILVER] * game.player.pct_perfect
+        qualities[config.QUALITY_SILVER] -= split_from_silver
+        # add back to their respective qualities
+        qualities[config.QUALITY_GOLD] += split_from_silver
+        qualities[config.QUALITY_IRIDIUM] += split_from_gold
+        return qualities
 
     def get_average_chance(self, location_data:FishLocation=None):
         """
@@ -402,20 +440,21 @@ class CatchableData():
         return apply_chance_modifiers(chance, chance_modifiers, chance_mode)
 
     def get_average_value(self, fish_quality:int = None, skill_bonus = config.SKILL_NONE):
-        fish_quality = self.get_average_quality() if (fish_quality == None) else fish_quality
+        fish_quality = self.get_quality_proportions() if (fish_quality == None) else fish_quality
         base_price = self.fish_object.price
         final_price = scale_price_by_quality(base_price, fish_quality)
         return floor(final_price * skill_bonus)
     
-    def get_average_xp(self, fish_quality:int = None, perfect = False, treasure = False):
+    def get_average_xp(self, fish_quality:int = None, treasure = False):
         # https://stardewvalleywiki.com/Fishing#Experience_Points 1.6.8
         if self.is_trap(): return 5 # Crab pots always net 5xp, no matter what
 
-        fish_quality = self.get_average_quality() if (fish_quality == None) else fish_quality
-        if perfect: fish_quality = adjust_quality(fish_quality, 1)
+        fish_quality = self.get_quality_proportions() if (fish_quality == None) else fish_quality
         resultant_xp = floor((fish_quality + 1) * 3)
         resultant_xp = floor(resultant_xp + (float(self.difficulty) / 3))
-        if perfect: resultant_xp = floor(resultant_xp * 2.4)
+        # Handle proportional adjustment to XP gains
+        perfect_xp = 2.4 * game.player.pct_perfect
+        resultant_xp = floor(resultant_xp * perfect_xp)
         if treasure: resultant_xp = floor(resultant_xp * 2.2)
         if self.is_legendary(): resultant_xp = floor(resultant_xp * 5)
         return resultant_xp
