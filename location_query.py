@@ -3,13 +3,13 @@ Main file to get and interpret fish data.
 Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
-from utils import format2DListAsTable
+import utils
 import constants
 import config
 
 def main():
     from game_object import game
-    
+
     game.post_init()
     game.season  = config.SEASON
     game.weather = config.WEATHER
@@ -27,11 +27,11 @@ def main():
     BAIT_TARGET_NAME = (game.base_objects[config.BAIT_TARGET_ID].name) if (config.BAIT_USED == constants.FISHING_BAIT_TARGETED) else ("none")
     # Print out initial data
     initial_data = [
-        [f"Season: {game.season}", f"Weather: {game.weather}", f"Time: {config.internal_to_classic(config.TIME)}"],
+        [f"Season: {game.season}", f"Weather: {game.weather}", f"Time: {utils.military_to_classic(config.TIME)}"],
         [f"Depth: {config.WATER_DEPTH}", f"Bait: {config.BAIT_USED}", f"Bait Target: {BAIT_TARGET_NAME}"],
         [f"Fishing Level: {config.FISHING_LEVEL}", f"Perfect catches: {config.SCALE_PCT_PERFECT_CATCHES*100}%", f"Rod used: {config.ROD_USED}"]
     ]
-    print(format2DListAsTable(initial_data, char_limit=30))
+    print(utils.format2DListAsTable(initial_data, char_limit=30))
 
     results = [game.location_objects[key].get_composition() for key in config.LOCATIONS]
 
@@ -76,7 +76,7 @@ def main():
                     location_data[3] = f"XP: {round(subloc_xp, 2)}"
                     printable_location_data.append(location_data)
     
-    print(format2DListAsTable(printable_location_data, char_limit=column_char_limit, column_delimiter="   "))
+    print(utils.format2DListAsTable(printable_location_data, char_limit=column_char_limit, column_delimiter="   "))
 
 if __name__ == "__main__":
     main()

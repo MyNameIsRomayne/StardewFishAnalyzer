@@ -11,6 +11,9 @@ from math import floor
 import numpy as np
 
 import constants
+import config
+import config_paths
+
 import game_reader as gr
 from base_object import BaseObject
 from furniture_object import FurnitureObject
@@ -27,10 +30,10 @@ class GameObject():
         self.player = (player) if (player != None) else (Player())
         self.daily_luck = 0
 
-        self.base_objects:dict[str, BaseObject]           = gr.get_objects(constants.FILE_JSON_OBJECTS,   constants.PY_OBJECTS_BASEOBJECT,   BaseObject)
-        self.fish_objects:dict[str, CatchableData]        = gr.get_objects(constants.FILE_JSON_FISH,      constants.PY_OBJECTS_FISH,      CatchableData)
-        self.location_objects:dict[str, GameLocation]     = gr.get_objects(constants.FILE_JSON_LOCATIONS, constants.PY_OBJECTS_GAMELOCATION, GameLocation)
-        self.furniture_objects:dict[str, FurnitureObject] = gr.get_objects(constants.FILE_JSON_FURNITURE, constants.PY_OBJECTS_FURNITURE, FurnitureObject)
+        self.base_objects:dict[str, BaseObject]           = gr.get_objects(config_paths.FILE_JSON_OBJECTS,   config_paths.FILE_PYOBJECTS_BASEOBJECT,   BaseObject)
+        self.fish_objects:dict[str, CatchableData]        = gr.get_objects(config_paths.FILE_JSON_FISH,      config_paths.FILE_PYOBJECTS_FISH,      CatchableData)
+        self.location_objects:dict[str, GameLocation]     = gr.get_objects(config_paths.FILE_JSON_LOCATIONS, config_paths.FILE_PYOBJECTS_GAMELOCATION, GameLocation)
+        self.furniture_objects:dict[str, FurnitureObject] = gr.get_objects(config_paths.FILE_JSON_FURNITURE, config_paths.FILE_PYOBJECTS_FURNITURE, FurnitureObject)
 
     def post_init(self):
         """Handles the post-init phase, for creating associations between object classes after they are all initialized."""
@@ -204,7 +207,7 @@ class FishLocation():
 
         self.itemids:list[BaseObject] = parse_item_ids(json_data)
     
-        if not constants.IGNORE_IRRELEVANT_JSON: return
+        if not config.IGNORE_IRRELEVANT_JSON: return
             
         self.bobber_position          = json_data["BobberPosition"]
         self.player_position          = json_data["PlayerPosition"]
@@ -292,7 +295,7 @@ class CatchableData():
             self.min_level:int        = int(split_data[INDEX_MIN_LEVEL])
 
             # Rewrite from the below if you need em'
-            if constants.IGNORE_IRRELEVANT_JSON: return
+            if config.IGNORE_IRRELEVANT_JSON: return
 
             INDEX_SEASON            = 6
             INDEX_LOCATIONS         = 8
