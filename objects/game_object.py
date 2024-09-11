@@ -14,10 +14,10 @@ import constants
 import config
 import config_paths
 
-from ..utils import game_reader as gr
+from utils import game_reader as gr
 from base_object import BaseObject
 from furniture_object import FurnitureObject
-from ..utils.probs_algorithm import get_probs, get_probs_with_target
+from utils.probs_algorithm import get_probs, get_probs_with_target
 from objects.player_object import Player
 
 class GameObject():

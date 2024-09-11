@@ -78,9 +78,6 @@ def main():
     
     print(utils.format2DListAsTable(printable_location_data, char_limit=column_char_limit, column_delimiter="   "))
 
-if __name__ == "__main__":
-    main()
-
 # Errors/null mean fish trash (167-173)
 # line 492 FishingRod.cs
 # Item o = location.getFish(this.fishingNibbleAccumulator, bait?.QualifiedItemId, this.clearWaterDistance + (splashPoint ? 1 : 0), who, baitPotency + (splashPoint ? 0.4 : 0.0), bobberTile);
