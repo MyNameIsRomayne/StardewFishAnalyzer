@@ -8,7 +8,7 @@ import constants
 import config
 
 def main():
-    from game_object import game
+    from objects.game_object import game
 
     game.post_init()
     game.season  = config.SEASON

@@ -4,7 +4,7 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
 import os
-from utils import Path, read_file_json, ensure_file_exists
+from utils.utils import Path, read_file_json, ensure_file_exists
 
 """
 Constants for Directory Paths. These should follow the convention of

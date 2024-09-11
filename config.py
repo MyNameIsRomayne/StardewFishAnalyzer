@@ -4,7 +4,8 @@ Please keep the spacing equal for constant variable groups for readability.
 Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
-import constants, utils
+import constants
+import utils.utils as utils
 
 # If false, every object will load what is subjectively irrelevant for this code. 
 # This is stuff like ignoring sale in random shops, sprite ID, etc.
