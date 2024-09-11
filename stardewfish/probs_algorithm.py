@@ -6,7 +6,6 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 import itertools
 from math import factorial
 import numpy as np
-from math import ceil
 import multiprocessing
 
 def process_permutation(prob_list, prob_list_inverted, permutations):

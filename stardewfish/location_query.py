@@ -3,27 +3,16 @@ Main file to get and interpret fish data.
 Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
-import utils
+import stardewfish.utils as utils
 import constants
 import config
 
-def main():
-    from objects.game_object import game
+from stardewfish import game_object
+game = game_object.game
 
+def get_location_stats():
     game.post_init()
-    game.season  = config.SEASON
-    game.weather = config.WEATHER
-    game.time    = config.TIME
-
-    # Setup the player values
-    game_player = game.player
-    game_player.fishing_level  = config.FISHING_LEVEL
-    game_player.pct_perfect    = config.SCALE_PCT_PERFECT_CATCHES
-    game_player.fishing_rod    = config.ROD_USED
-    game_player.bait           = config.BAIT_USED
-    game_player.bait_target_id = config.BAIT_TARGET_ID
-    game_player.fishing_depth  = config.WATER_DEPTH
-
+    """Get location data from some game object."""
     BAIT_TARGET_NAME = (game.base_objects[config.BAIT_TARGET_ID].name) if (config.BAIT_USED == constants.FISHING_BAIT_TARGETED) else ("none")
     # Print out initial data
     initial_data = [

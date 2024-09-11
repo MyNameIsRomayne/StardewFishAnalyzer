@@ -4,7 +4,10 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
 import os
-from utils.utils import Path, read_file_json, ensure_file_exists
+from stardewfish import utils
+Path = utils.Path
+read_file_json = utils.read_file_json
+ensure_file_exists = utils.ensure_file_exists
 
 """
 Constants for Directory Paths. These should follow the convention of

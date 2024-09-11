@@ -3,9 +3,8 @@ File for reading and storing the data turned XNB.
 Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
-import constants
 import config_paths
-from utils import read_file_contents, read_file_json, ensure_file_exists
+from stardewfish.utils import read_file_contents, read_file_json, ensure_file_exists
 import pickle
 
 def get_version() -> str:

@@ -14,19 +14,20 @@ import constants
 import config
 import config_paths
 
-from utils import game_reader as gr
-from base_object import BaseObject
-from furniture_object import FurnitureObject
-from utils.probs_algorithm import get_probs, get_probs_with_target
-from objects.player_object import Player
+import stardewfish.game_reader as gr
+
+from stardewfish.base_object      import BaseObject
+from stardewfish.furniture_object import FurnitureObject
+from stardewfish.probs_algorithm  import get_probs, get_probs_with_target
+from stardewfish.player_object    import Player
 
 class GameObject():
     
     def __init__(self, player:Player = None):
         # Setup object data
-        self.season = None
-        self.weather = None
-        self.time = None
+        self.season  = config.SEASON
+        self.weather = config.WEATHER
+        self.time    = config.TIME
         self.player = (player) if (player != None) else (Player())
         self.daily_luck = 0
 

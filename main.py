@@ -3,7 +3,9 @@ Main file for reading and handling command line arguments.
 Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
-import sys, os
+import sys
+
+from stardewfish import location_query
 
 def fail_query(message="Invalid Syntax."):
     print(message)
@@ -18,8 +20,7 @@ def main():
         fail_query()
     
     if query_type == "location":
-        from utils.location_query import main
-        main()
+        location_query.get_location_stats()
         quit()
 
 if __name__ == "__main__":
