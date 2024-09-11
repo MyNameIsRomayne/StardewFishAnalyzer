@@ -11,11 +11,11 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 from math import floor
 import numpy as np
 
-import config
-import GameReader as gr
+import constants
+import game_reader as gr
 from BaseObject import BaseObject
-from FurnitureObject import FurnitureObject
-from ProbsAlgorithm import get_probs, get_probs_with_target
+from furniture_object import FurnitureObject
+from probs_algorithm import get_probs, get_probs_with_target
 from Player import Player
 
 class GameObject():
@@ -28,10 +28,10 @@ class GameObject():
         self.player = (player) if (player != None) else (Player())
         self.daily_luck = 0
 
-        self.base_objects:dict[str, BaseObject]           = gr.get_objects(config.objects_file,   config.objects_file_py,   BaseObject)
-        self.fish_objects:dict[str, CatchableData]        = gr.get_objects(config.fish_file,      config.fish_file_py,      CatchableData)
-        self.location_objects:dict[str, GameLocation]     = gr.get_objects(config.locations_file, config.locations_file_py, GameLocation)
-        self.furniture_objects:dict[str, FurnitureObject] = gr.get_objects(config.furniture_file, config.furniture_file_py, FurnitureObject)
+        self.base_objects:dict[str, BaseObject]           = gr.get_objects(constants.objects_file,   constants.objects_file_py,   BaseObject)
+        self.fish_objects:dict[str, CatchableData]        = gr.get_objects(constants.fish_file,      constants.fish_file_py,      CatchableData)
+        self.location_objects:dict[str, GameLocation]     = gr.get_objects(constants.locations_file, constants.locations_file_py, GameLocation)
+        self.furniture_objects:dict[str, FurnitureObject] = gr.get_objects(constants.furniture_file, constants.furniture_file_py, FurnitureObject)
 
     def post_init(self):
         """Handles the post-init phase, for creating associations between object classes after they are all initialized."""
@@ -108,7 +108,7 @@ class GameLocation():
         # Keep a running total of how likely it is we get to the current 
         chance_pass_all_previous = 1
 
-        using_targeted_bait = game.player.bait == config.FISHING_BAIT_TARGETED
+        using_targeted_bait = game.player.bait == constants.FISHING_BAIT_TARGETED
         targeted_bait_id = game.player.bait_target_id
 
         # Get the chance for each fish within a precedence group
@@ -205,7 +205,7 @@ class FishLocation():
 
         self.itemids:list[BaseObject] = parse_item_ids(json_data)
     
-        if not config.IGNORE_IRRELEVANT_JSON: return
+        if not constants.IGNORE_IRRELEVANT_JSON: return
             
         self.bobber_position          = json_data["BobberPosition"]
         self.player_position          = json_data["PlayerPosition"]
@@ -293,7 +293,7 @@ class CatchableData():
             self.min_level:int        = int(split_data[INDEX_MIN_LEVEL])
 
             # Rewrite from the below if you need em'
-            if config.IGNORE_IRRELEVANT_JSON: return
+            if constants.IGNORE_IRRELEVANT_JSON: return
 
             INDEX_SEASON            = 6
             INDEX_LOCATIONS         = 8
@@ -344,9 +344,9 @@ class CatchableData():
 
     def get_absolute_fish_quality(self, size:float) -> int:
         """Internal helper function, gets the quality of some size."""
-        if   size < 0.33: return config.QUALITY_NORMAL
-        elif size < 0.66: return config.QUALITY_SILVER
-        else:             return config.QUALITY_GOLD
+        if   size < 0.33: return constants.QUALITY_NORMAL
+        elif size < 0.66: return constants.QUALITY_SILVER
+        else:             return constants.QUALITY_GOLD
 
     def get_quality_proportions(self) -> dict[int, float]:
         """
@@ -354,10 +354,10 @@ class CatchableData():
         QUALITY_NORMAL, QUALITY_SILVER, QUALITY_GOLD, QUALITY_IRIDIUM as (float, float, float, float).
         """
         qualities = {
-            config.QUALITY_NORMAL  : 0,
-            config.QUALITY_SILVER  : 0,
-            config.QUALITY_GOLD    : 0,
-            config.QUALITY_IRIDIUM : 0
+            constants.QUALITY_NORMAL  : 0,
+            constants.QUALITY_SILVER  : 0,
+            constants.QUALITY_GOLD    : 0,
+            constants.QUALITY_IRIDIUM : 0
         }
         min_size, max_size = self.get_fish_size_ranges()
         min_quality, max_quality = self.get_absolute_fish_quality(min_size), self.get_absolute_fish_quality(max_size)
@@ -384,14 +384,14 @@ class CatchableData():
         
         # only silver/gold get quality increases like this, so its sane to handle manually
         # split proportion of perfects from gold
-        split_from_gold = qualities[config.QUALITY_GOLD] * game.player.pct_perfect
-        qualities[config.QUALITY_GOLD] -= split_from_gold
+        split_from_gold = qualities[constants.QUALITY_GOLD] * game.player.pct_perfect
+        qualities[constants.QUALITY_GOLD] -= split_from_gold
         # split proportion of perfects from silver
-        split_from_silver = qualities[config.QUALITY_SILVER] * game.player.pct_perfect
-        qualities[config.QUALITY_SILVER] -= split_from_silver
+        split_from_silver = qualities[constants.QUALITY_SILVER] * game.player.pct_perfect
+        qualities[constants.QUALITY_SILVER] -= split_from_silver
         # add back to their respective qualities
-        qualities[config.QUALITY_GOLD] += split_from_silver
-        qualities[config.QUALITY_IRIDIUM] += split_from_gold
+        qualities[constants.QUALITY_GOLD] += split_from_silver
+        qualities[constants.QUALITY_IRIDIUM] += split_from_gold
         return qualities
 
     def get_average_chance(self, location_data:FishLocation=None):
@@ -407,9 +407,9 @@ class CatchableData():
         curiosity_lure_buff = 0
         fishing_level       = game.player.fishing_level
         water_depth         = game.player.fishing_depth
-        is_training_rod     = (game.player.fishing_rod == config.FISHING_ROD_TRAINING)
-        curiosity_lure      = (game.player.lure == config.FISHING_LURE_CURIOSITY)
-        bait_targets_fish   = (game.player.bait == config.FISHING_BAIT_TARGETED
+        is_training_rod     = (game.player.fishing_rod == constants.FISHING_ROD_TRAINING)
+        curiosity_lure      = (game.player.lure == constants.FISHING_LURE_CURIOSITY)
+        bait_targets_fish   = (game.player.bait == constants.FISHING_BAIT_TARGETED
                                and game.player.bait_target_id == self.id)
 
         if location_data != None:
@@ -439,7 +439,7 @@ class CatchableData():
             return chance
         return apply_chance_modifiers(chance, chance_modifiers, chance_mode)
 
-    def get_average_value(self, skill_bonus = config.SKILL_NONE):
+    def get_average_value(self, skill_bonus = constants.SKILL_NONE):
         fish_quality = self.get_quality_proportions()
         base_price = self.fish_object.price
         scaled_final_prices = []
@@ -546,13 +546,13 @@ def parse_item_ids(raw_json:dict) -> list[str]:
 
 def scale_price_by_quality(price:int, quality:int):
     # sanity
-    if quality < config.QUALITY_NORMAL: quality = config.QUALITY_NORMAL
-    if quality > config.QUALITY_IRIDIUM: quality = config.QUALITY_IRIDIUM
+    if quality < constants.QUALITY_NORMAL: quality = constants.QUALITY_NORMAL
+    if quality > constants.QUALITY_IRIDIUM: quality = constants.QUALITY_IRIDIUM
     # scaling
-    if quality == config.QUALITY_NORMAL: return floor(price * config.PRICE_SCALE_NORMAL)
-    if quality == config.QUALITY_SILVER: return floor(price * config.PRICE_SCALE_SILVER)
-    if quality == config.QUALITY_GOLD: return floor(price * config.PRICE_SCALE_GOLD)
-    if quality == config.QUALITY_IRIDIUM: return floor(price * config.PRICE_SCALE_IRIDIUM)
+    if quality == constants.QUALITY_NORMAL: return floor(price * constants.PRICE_SCALE_NORMAL)
+    if quality == constants.QUALITY_SILVER: return floor(price * constants.PRICE_SCALE_SILVER)
+    if quality == constants.QUALITY_GOLD: return floor(price * constants.PRICE_SCALE_GOLD)
+    if quality == constants.QUALITY_IRIDIUM: return floor(price * constants.PRICE_SCALE_IRIDIUM)
 
 def apply_chance_modifiers(chance:float, modifiers:list[tuple[float, str]], chance_mode:str):
     """
@@ -602,20 +602,20 @@ def adjust_quality(quality, factor:int):
     if factor == 0: return quality
     # Handle quality increases
     if factor > 0:
-        if quality > config.QUALITY_IRIDIUM: return config.QUALITY_IRIDIUM
-        if quality == config.QUALITY_IRIDIUM: return config.QUALITY_IRIDIUM # cap at iridium
-        if quality == config.QUALITY_GOLD: return config.QUALITY_IRIDIUM
-        if quality == config.QUALITY_SILVER: return config.QUALITY_GOLD
-        if quality == config.QUALITY_NORMAL: return config.QUALITY_SILVER
-        if quality < config.QUALITY_NORMAL: return config.QUALITY_SILVER
+        if quality > constants.QUALITY_IRIDIUM: return constants.QUALITY_IRIDIUM
+        if quality == constants.QUALITY_IRIDIUM: return constants.QUALITY_IRIDIUM # cap at iridium
+        if quality == constants.QUALITY_GOLD: return constants.QUALITY_IRIDIUM
+        if quality == constants.QUALITY_SILVER: return constants.QUALITY_GOLD
+        if quality == constants.QUALITY_NORMAL: return constants.QUALITY_SILVER
+        if quality < constants.QUALITY_NORMAL: return constants.QUALITY_SILVER
     # Handle quality decreases
     if factor < 0:
-        if quality < config.QUALITY_NORMAL: return config.QUALITY_NORMAL
-        if quality == config.QUALITY_NORMAL: return config.QUALITY_NORMAL # cap at normal
-        if quality == config.QUALITY_SILVER: return config.QUALITY_NORMAL
-        if quality == config.QUALITY_GOLD: return config.QUALITY_SILVER
-        if quality == config.QUALITY_IRIDIUM: return config.QUALITY_GOLD
-        if quality > config.QUALITY_IRIDIUM: return config.QUALITY_GOLD
+        if quality < constants.QUALITY_NORMAL: return constants.QUALITY_NORMAL
+        if quality == constants.QUALITY_NORMAL: return constants.QUALITY_NORMAL # cap at normal
+        if quality == constants.QUALITY_SILVER: return constants.QUALITY_NORMAL
+        if quality == constants.QUALITY_GOLD: return constants.QUALITY_SILVER
+        if quality == constants.QUALITY_IRIDIUM: return constants.QUALITY_GOLD
+        if quality > constants.QUALITY_IRIDIUM: return constants.QUALITY_GOLD
 
 def get_condition(conditions:str|None, target) -> str|bool:
     """
@@ -671,7 +671,7 @@ def filter_catchable_fish(subloc_fish:list[FishLocation]):
         if (presumed_fish) and (not fish_loc.ignoresubdata) and (not presumed_fish.fish_satisfies_subdata()):
                 continue
         # Filter magic bait
-        if (fish_loc.requiremagicbait) and (not game.player.bait == config.FISHING_BAIT_MAGIC):
+        if (fish_loc.requiremagicbait) and (not game.player.bait == constants.FISHING_BAIT_MAGIC):
             continue
         # Filter by season (none in season param means any season)
         if (fish_loc.season != None) and (str(fish_loc.season).lower() != game.season):

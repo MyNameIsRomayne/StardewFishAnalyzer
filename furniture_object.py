@@ -1,4 +1,4 @@
-import config
+import constants
 
 class FurnitureObject():
 
@@ -17,7 +17,7 @@ class FurnitureObject():
         
         # Don't worry about anything beyond this point unless you need any of the below.
         # If you need anything marked irrelevant, just change the code so it's up here.
-        if config.IGNORE_IRRELEVANT_JSON: return
+        if constants.IGNORE_IRRELEVANT_JSON: return
         
         INDEX_TILESHEET_SIZE = 2
         INDEX_BOUNDING_BOX_SIZE = 3

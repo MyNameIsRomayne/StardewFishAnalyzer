@@ -3,8 +3,8 @@ File for reading and storing the data turned XNB.
 Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
-import config
-from util import read_file_contents, read_file_json, ensure_file_exists
+import constants
+from utils import read_file_contents, read_file_json, ensure_file_exists
 import pickle
 
 def get_version() -> str:
@@ -12,7 +12,7 @@ def get_version() -> str:
     Get the current version of the unpacked content.
     returns: A string representing the build number, e.g. "1.6.8.24119"
     """
-    contents = read_file_contents(config.decompile_properties_file, lines=True)
+    contents = read_file_contents(constants.decompile_properties_file, lines=True)
     for line in contents:
         if "AssemblyFileVersion" in line:
             # Get the version, which is between some string quotes

@@ -3,8 +3,8 @@ Main file to get and interpret fish data.
 Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
-from util import format2DListAsTable
-import config
+from utils import format2DListAsTable
+import constants
 
 def classic_to_internal(classical_time:str) -> int:
     """Turn times like 6:59 AM into 659, and 6:59 PM to 1859 (24 hr time)"""
@@ -29,18 +29,18 @@ def internal_to_classic(internal_time:int) -> str:
     return f"{hours}:{minutes}{am_or_pm}"
 
 def main():
-    from GameObject import game
+    from game_object import game
     print('')
     # Setup some internal config
     SHOW_FISH = True
     FISHING_LEVEL = 8
-    SEASON = config.SEASON_SUMMER
-    WEATHER = config.WEATHER_SUNNY
-    TIME = classic_to_internal("7:00AM")
-    LOCATIONS = [config.LOCATION_BEACH, config.LOCATION_FOREST, config.LOCATION_TOWN, config.LOCATION_MOUNTAIN]
+    SEASON = constants.SEASON_FALL
+    WEATHER = constants.WEATHER_SUNNY
+    TIME = classic_to_internal("10:00PM")
+    LOCATIONS = [constants.LOCATION_BEACH, constants.LOCATION_FOREST, constants.LOCATION_TOWN, constants.LOCATION_MOUNTAIN]
     SCALE_PCT_PERFECT_CATCHES = 1
-    ROD_USED = config.FISHING_ROD_IRIDIUM
-    BAIT_USED = config.FISHING_BAIT_NONE
+    ROD_USED = constants.FISHING_ROD_IRIDIUM
+    BAIT_USED = constants.FISHING_BAIT_NONE
     BAIT_TARGET_ID = "131" # sardine
     WATER_DEPTH = 5 # zone (0, 1, 2, 3, 5)
     # Act upon above info
@@ -57,7 +57,7 @@ def main():
     game_player.bait_target_id = BAIT_TARGET_ID
     game_player.fishing_depth = WATER_DEPTH
 
-    BAIT_TARGET_NAME = (game.base_objects[BAIT_TARGET_ID].name) if (BAIT_USED == config.FISHING_BAIT_TARGETED) else ("none")
+    BAIT_TARGET_NAME = (game.base_objects[BAIT_TARGET_ID].name) if (BAIT_USED == constants.FISHING_BAIT_TARGETED) else ("none")
     # Print out initial data
     initial_data = [
         [f"Season: {game.season}", f"Weather: {game.weather}", f"Time: {internal_to_classic(TIME)}"],

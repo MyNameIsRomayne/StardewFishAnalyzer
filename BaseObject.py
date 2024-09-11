@@ -1,4 +1,4 @@
-import config
+import constants
 
 class BaseObject():
   
@@ -12,7 +12,7 @@ class BaseObject():
     # Any context for the object. color, season, caught location, etc.
     self.context_tags:list|None = json["ContextTags"]
 
-    if config.IGNORE_IRRELEVANT_JSON: return
+    if constants.IGNORE_IRRELEVANT_JSON: return
 
     # The name, formatted as a localization query
     self.display_name:str = json["DisplayName"]

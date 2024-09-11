@@ -23,6 +23,7 @@ def process_permutation(prob_list, prob_list_inverted, permutations):
             sum_probs[i] += current_prob
 
     total_permutations = factorial(len(prob_list))
+    print(sum_probs)
     final_sums = [i/total_permutations for i in sum_probs]
     return final_sums
 
@@ -88,6 +89,13 @@ def get_subsets(nparray, sublen):
 
 # Test for limits
 if __name__ == "__main__":
+    test = np.array(
+        [1/8, 1/4, 1/2, 1/1]
+    )
+    print(test)
+    print(get_probs(test))
+    quit()
+
     import time
     for j in range(11):
         start = time.perf_counter()
