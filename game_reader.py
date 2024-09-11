@@ -12,7 +12,7 @@ def get_version() -> str:
     Get the current version of the unpacked content.
     returns: A string representing the build number, e.g. "1.6.8.24119"
     """
-    contents = read_file_contents(constants.decompile_properties_file, lines=True)
+    contents = read_file_contents(constants.FILE_DECOMPILE_ASSEMBLYINFO, lines=True)
     for line in contents:
         if "AssemblyFileVersion" in line:
             # Get the version, which is between some string quotes

@@ -177,6 +177,28 @@ def format2DListAsTable(l_2d:list[str], char_limit:int=900, column_delimiter="|"
         padded.append(f" {column_delimiter} ".join(padded_row))
     return "\n".join(padded)
 
+def classic_to_military(classical_time:str) -> int:
+    """Turn times like 6:59 AM into 659, and 6:59 PM to 1859 (24 hr time)"""
+    final_time = 0
+    hours, minutes = classical_time.split(":")
+    minutes, am_or_pm = minutes[0:2], minutes[2:].lower()
+    hours, minutes = int(hours), int(minutes)
+    # Add base time
+    final_time += (hours * 100)
+    final_time += (minutes * 1)
+    # Factor in AM/PM
+    if (am_or_pm == "pm"):
+        final_time += 1200
+    return final_time
+
+def military_to_classic(internal_time:int) -> str:
+    """Turn times like 659 into 6:59AM, and 1859 to 6:59PM"""
+    hours = int(internal_time/100)
+    minutes = int(internal_time%100)
+    am_or_pm = ("AM") if (internal_time < 1200) else ("PM")
+    hours = (hours - 12) if (internal_time > 1200) else (hours)
+    return f"{hours}:{minutes}{am_or_pm}"
+
 def get_dir_total_file_lines() -> int:
     """Get the total amount of lines in the current directory. IDK, its just cool."""
     current_dir_files = [file for file in os.listdir(os.getcwd()) if not os.path.isdir(file)]

@@ -1,4 +1,9 @@
-import constants
+"""
+File which holds the FurnitureObject class.
+Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
+"""
+
+import config
 
 class FurnitureObject():
 
@@ -17,7 +22,7 @@ class FurnitureObject():
         
         # Don't worry about anything beyond this point unless you need any of the below.
         # If you need anything marked irrelevant, just change the code so it's up here.
-        if constants.IGNORE_IRRELEVANT_JSON: return
+        if config.IGNORE_IRRELEVANT_JSON: return
         
         INDEX_TILESHEET_SIZE = 2
         INDEX_BOUNDING_BOX_SIZE = 3

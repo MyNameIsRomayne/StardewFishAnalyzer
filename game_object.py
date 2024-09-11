@@ -7,16 +7,15 @@ CatchableData - Initializes and holds information about fish from Fish.json
 Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
-
 from math import floor
 import numpy as np
 
 import constants
 import game_reader as gr
-from BaseObject import BaseObject
+from base_object import BaseObject
 from furniture_object import FurnitureObject
 from probs_algorithm import get_probs, get_probs_with_target
-from Player import Player
+from player import Player
 
 class GameObject():
     
@@ -28,10 +27,10 @@ class GameObject():
         self.player = (player) if (player != None) else (Player())
         self.daily_luck = 0
 
-        self.base_objects:dict[str, BaseObject]           = gr.get_objects(constants.objects_file,   constants.objects_file_py,   BaseObject)
-        self.fish_objects:dict[str, CatchableData]        = gr.get_objects(constants.fish_file,      constants.fish_file_py,      CatchableData)
-        self.location_objects:dict[str, GameLocation]     = gr.get_objects(constants.locations_file, constants.locations_file_py, GameLocation)
-        self.furniture_objects:dict[str, FurnitureObject] = gr.get_objects(constants.furniture_file, constants.furniture_file_py, FurnitureObject)
+        self.base_objects:dict[str, BaseObject]           = gr.get_objects(constants.FILE_JSON_OBJECTS,   constants.PY_OBJECTS_BASEOBJECT,   BaseObject)
+        self.fish_objects:dict[str, CatchableData]        = gr.get_objects(constants.FILE_JSON_FISH,      constants.PY_OBJECTS_FISH,      CatchableData)
+        self.location_objects:dict[str, GameLocation]     = gr.get_objects(constants.FILE_JSON_LOCATIONS, constants.PY_OBJECTS_GAMELOCATION, GameLocation)
+        self.furniture_objects:dict[str, FurnitureObject] = gr.get_objects(constants.FILE_JSON_FURNITURE, constants.PY_OBJECTS_FURNITURE, FurnitureObject)
 
     def post_init(self):
         """Handles the post-init phase, for creating associations between object classes after they are all initialized."""
