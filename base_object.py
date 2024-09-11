@@ -1,4 +1,9 @@
-import constants
+"""
+File which holds the BaseObject class.
+Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
+"""
+
+import config
 
 class BaseObject():
   
@@ -12,7 +17,7 @@ class BaseObject():
     # Any context for the object. color, season, caught location, etc.
     self.context_tags:list|None = json["ContextTags"]
 
-    if constants.IGNORE_IRRELEVANT_JSON: return
+    if config.IGNORE_IRRELEVANT_JSON: return
 
     # The name, formatted as a localization query
     self.display_name:str = json["DisplayName"]
