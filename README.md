@@ -98,3 +98,14 @@ Quality:                0%                     0.0%                    85.47%   
 
 Value:                  150                    187                     225                     300
 ```
+
+## Contributing
+
+All feature requests, issue reports, and PRs are welcome, so long as they are in good faith. What constitutes good faith is subjective, but it is assumed by default that all contributors are acting in good faith.
+You do not need to do anything special to contribute! Just fork this repository, clone it onto your device, create a branch off your fork, and get to work. If you do not know how to do this, there are plenty of great guides online which teach you how -- any should work.
+
+## Using this project
+
+This project is open-source and free to use, but please consider that it is licensed under the AGPL-3.0 License. The intention of using this particular license is to ensure that due credit is given by any derivative works, and that such works must also be open source under the same terms.
+
+Note that the above statement does not reflect the actual terms of the AGPL-3.0 License agreement, and rather states the intention of why this project uses that particular license.
