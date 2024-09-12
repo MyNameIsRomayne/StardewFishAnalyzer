@@ -19,19 +19,18 @@ DIRECTORY_DATA    = DIRECTORY_PROJECT + Path("data")
 # Private JSON needs to be setup here specifically as it has data which pertains to paths configuration
 _private_json:dict = read_file_json(DIRECTORY_DATA + Path("private_config.json"))
 USER               = _private_json["User"]
-PATH_DECOMPILE     = _private_json["Path_Decompile"]
 
 DIRECTORY_USER                  = Path(f"C:/Users/{USER}")
 DIRECTORY_STARDEW_VALLEY        = Path("C:/Program Files (x86)/Steam/steamapps/common/Stardew Valley")
 DIRECTORY_CONTENT_UNPACKED_DATA = DIRECTORY_STARDEW_VALLEY + Path("Content (unpacked)/Data")
-DIRECTORY_DECOMPILE             = Path(PATH_DECOMPILE)
 
 """
 Constants for File Paths. These should follow a similar format, but also explain the data type.
 E.G. FILE_JSON_TESTDATA
      FILE_PYOBJECTS_FISH
 """
-FILE_DECOMPILE_ASSEMBLYINFO = DIRECTORY_DECOMPILE + Path("Properties/AssemblyInfo.cs")
+
+FILE_STARDEW_EXECUTABLE = DIRECTORY_STARDEW_VALLEY + Path("Stardew Valley.exe")
 
 FILE_JSON_OBJECTS   = DIRECTORY_CONTENT_UNPACKED_DATA + Path("Objects.json")
 FILE_JSON_FISH      = DIRECTORY_CONTENT_UNPACKED_DATA + Path("Fish.json")
@@ -55,9 +54,7 @@ ensure(DIRECTORY_DATA)
 ensure(DIRECTORY_USER)
 ensure(DIRECTORY_STARDEW_VALLEY)
 ensure(DIRECTORY_CONTENT_UNPACKED_DATA)
-ensure(DIRECTORY_DECOMPILE)
 
-ensure(FILE_DECOMPILE_ASSEMBLYINFO)
 ensure(FILE_JSON_OBJECTS)
 ensure(FILE_JSON_FISH)
 ensure(FILE_JSON_FURNITURE)

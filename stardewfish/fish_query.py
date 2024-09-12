@@ -11,7 +11,7 @@ from stardewfish.utils       import format2DListAsTable, military_to_classic
 import config
 import constants
 
-def handle_query(value:str):
+def handle_fish_query(value:str):
     game.post_init()
 
     target:BaseObject = None

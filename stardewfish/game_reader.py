@@ -4,22 +4,17 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
 import config_paths
-from stardewfish.utils import read_file_contents, read_file_json, ensure_file_exists
+from stardewfish.utils import read_file_json, ensure_file_exists
 import pickle
+import win32api
 
 def get_version() -> str:
     """
     Get the current version of the unpacked content.
-    returns: A string representing the build number, e.g. "1.6.8.24119"
+    returns: A number representing the build number, e.g. 65542"
     """
-    contents = read_file_contents(config_paths.FILE_DECOMPILE_ASSEMBLYINFO, lines=True)
-    for line in contents:
-        if "AssemblyFileVersion" in line:
-            # Get the version, which is between some string quotes
-            line = str(line)
-            left_index = (line.find('"')+1)
-            right_index = (line.rfind('"'))
-            return line[left_index:right_index]
+    file_info = win32api.GetFileVersionInfo(str(config_paths.FILE_STARDEW_EXECUTABLE), "\\")
+    return file_info["FileVersionMS"]
 
 def save_objects(objects:dict[str], file_path:str) -> None:
     """

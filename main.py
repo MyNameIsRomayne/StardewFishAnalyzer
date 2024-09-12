@@ -6,7 +6,8 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 import sys
 
 from stardewfish.location_query import get_location_stats
-from stardewfish.fish_query     import handle_query
+from stardewfish.fish_query     import handle_fish_query
+from stardewfish.config_query   import handle_config_query
 
 def fail_query(message="Invalid Syntax."):
     print(message)
@@ -16,7 +17,7 @@ def main():
     args = sys.argv
 
     query_type = args[1]
-    allowed_queries = ["locations", "fish"]
+    allowed_queries = ["locations", "fish", "context"]
     if query_type not in allowed_queries:
         fail_query()
     
@@ -28,7 +29,11 @@ def main():
     
     elif query_type == "fish":
         fish_name = args[2]
-        handle_query(fish_name)
+        handle_fish_query(fish_name)
+        quit()
+
+    elif query_type == "context":
+        handle_config_query(args[2:])
         quit()
 
 if __name__ == "__main__":

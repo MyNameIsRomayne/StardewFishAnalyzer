@@ -12,6 +12,8 @@ The Stardew Fish Data Analyzer (SFDA?) is a command-line utility program which a
 
 The project can be installed as-is from the source code, so long as you have the sufficient Python interpreter installed to do so -- anecotaly, I use **Python Version 3.12.4** as of writing -- other versions should work fine, too. Additionally, requirements can be installed from `requirements.txt`, which currently only consists of numpy.
 
+**PLEASE NOTE:** You will need the `Content (unpacked)` folder in your Stardew Valley directory. See how to do this at `https://github.com/Pathoschild/StardewXnbHack`.
+
 You can check your python version with:
 `python --version`
 
@@ -20,6 +22,15 @@ To install this repository and its packages, navigate to the directory you would
 `python -m pip install -r requirements.txt`
 
 This should always complete successfully. If you get an error, please check your python version / packages again.
+
+Lastly, you will need to create and fill out `private_config.json` in the `data/` directory. This file lets the program generate paths to your stardew valley folder and decompile folder.
+Fill it out as follows:
+```
+{
+    "User": "YOUR-COMPUTER-USERNAME-HERE"
+}
+```
+As of writing, only one variable is needed.
 
 ## Usage
 
