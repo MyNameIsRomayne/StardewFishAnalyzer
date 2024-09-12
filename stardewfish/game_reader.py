@@ -17,7 +17,7 @@ def get_version() -> str:
     info = GetFileVersionInfo(config_paths.FILE_STARDEW_EXECUTABLE, "\\")
     ms = info['FileVersionMS']
     ls = info['FileVersionLS']
-    return ".".join([str(n) for n in [HIWORD(ms), LOWORD(ms), HIWORD(ls), LOWORD(ls)])
+    return ".".join([str(n) for n in [HIWORD(ms), LOWORD(ms), HIWORD(ls), LOWORD(ls)]])
 
 def save_objects(objects:dict[str], file_path:str) -> None:
     """
