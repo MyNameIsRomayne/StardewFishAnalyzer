@@ -5,6 +5,7 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 """
 
 import constants
+import config_paths
 from stardewfish import utils
 
 # If false, every object will load what is subjectively irrelevant for this code. 
@@ -12,25 +13,48 @@ from stardewfish import utils
 # This reduces file size / ever so slightly increases load speed
 IGNORE_IRRELEVANT_JSON = True
 
-# Enable some subjective code which will scale the % perfect catches for a fish depending
-# on its own difficulty.
-DO_PERFECTION_DIFFICULTY_SCALE = True
+_public_config:dict = utils.read_file_json(config_paths.FILE_JSON_PUBLIC_CONFIG)
 
-SHOW_FISH     = True # whether to show individual catchable info for each location
-FISHING_LEVEL = 8 # player fishing level
-SEASON        = constants.SEASON_FALL
-WEATHER       = constants.WEATHER_SUNNY
-TIME          = utils.classic_to_military("10:00PM") # game time
-LOCATIONS     = [ # locations to check
+# Setup default values
+_default_config = {
+    "do_difficulty_scale"   : True,
+    "show_fish"             : True,
+    "fishing_level"         : 10,
+    "season"                : constants.SEASON_SPRING,
+    "weather"               : constants.WEATHER_SUNNY,
+    "time"                  : utils.classic_to_military("6:00AM"),
+    "scale_perfect_catches" : 1,
+    "rod_used"              : constants.FISHING_ROD_IRIDIUM,
+    "bait_used"             : constants.FISHING_BAIT_NONE,
+    "lure_used"             : constants.FISHING_LURE_NONE,
+    "bait_target_id"        : None,
+    "water_depth"           : 5,
+    "locations"             : [
     constants.LOCATION_BEACH,
     constants.LOCATION_FOREST,
     constants.LOCATION_TOWN,
-    constants.LOCATION_MOUNTAIN
-]
+    constants.LOCATION_MOUNTAIN,
+    ],
+}
 
-SCALE_PCT_PERFECT_CATCHES = 0.17 # the percentage of catches which will be perfect. (0-1)
-ROD_USED                  = constants.FISHING_ROD_IRIDIUM
-BAIT_USED                 = constants.FISHING_BAIT_NONE
-LURE_USED                 = constants.FISHING_LURE_NONE
-BAIT_TARGET_ID            = "131" # (sardine) the current object ID of the targeted bait (if any) being used.
-WATER_DEPTH               = 5 # fishing zone (0, 1, 2, 3, 5)
+# Override defaults with explicit values from public_config.json
+for config_key in _default_config.keys():
+    if config_key in _public_config.keys():
+        _default_config[config_key] = _public_config[config_key]
+
+# Take values from default config and put them into variables for easy use elsewhere.
+DO_PERFECTION_DIFFICULTY_SCALE = _default_config["do_difficulty_scale"] # enable scaling fish perfection % based off factors like its difficulty
+
+SHOW_FISH     = _default_config["show_fish"] # whether to show individual catchable info for each location
+FISHING_LEVEL = _default_config["fishing_level"]
+SEASON        = _default_config["season"]
+WEATHER       = _default_config["weather"]
+TIME          = _default_config["time"]
+LOCATIONS     = _default_config["locations"]
+
+SCALE_PCT_PERFECT_CATCHES = _default_config["scale_perfect_catches"] # the percentage of catches which will be perfect. (0-1)
+ROD_USED                  = _default_config["rod_used"]
+BAIT_USED                 = _default_config["bait_used"]
+LURE_USED                 = _default_config["lure_used"]
+BAIT_TARGET_ID            = _default_config["bait_target_id"] # (sardine) the current object ID of the targeted bait (if any) being used.
+WATER_DEPTH               = _default_config["water_depth"] # fishing zone (0, 1, 2, 3, 5)
