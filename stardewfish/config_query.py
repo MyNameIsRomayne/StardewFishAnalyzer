@@ -9,6 +9,16 @@ import config
 import config_paths
 import stardewfish.utils as utils
 
+def try_convert_number(user_value:str) -> str|float|int:
+    try:
+        return float(user_value)
+    except ValueError:
+        pass # it could be an int
+    try:
+        return int(user_value)
+    except ValueError:
+        return user_value # it is definitely not a float or int
+
 def handle_config_query(args:list[str]):
     
     if args[0] == "help":
@@ -21,6 +31,7 @@ def handle_config_query(args:list[str]):
 
     elif args[0] == "set":
         args_key, args_val = args[1].lower(), args[2]
+        args_val = try_convert_number(args_val)
         if args_key not in config._default_config.keys():
             print(f"Key {args_key} not recognized.")
         config._public_config[args_key] = args_val
