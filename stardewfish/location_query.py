@@ -10,7 +10,7 @@ import config
 from stardewfish import game_object
 game = game_object.game
 
-def get_location_stats():
+def get_location_stats(locations=[]):
     game.post_init()
     """Get location data from some game object."""
     BAIT_TARGET_NAME = (game.base_objects[config.BAIT_TARGET_ID].name) if (config.BAIT_USED == constants.FISHING_BAIT_TARGETED) else ("none")
@@ -22,7 +22,9 @@ def get_location_stats():
     ]
     print(utils.format2DListAsTable(initial_data, char_limit=30))
 
-    results = [game.location_objects[key].get_composition() for key in config.LOCATIONS]
+    use_locations = config.LOCATIONS if (len(locations) == 0) else locations
+
+    results = [game.location_objects[key].get_composition() for key in use_locations]
 
     printable_location_data:list[list[str]] = []
     row_len = 4

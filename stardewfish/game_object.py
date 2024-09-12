@@ -20,6 +20,7 @@ from stardewfish.base_object      import BaseObject
 from stardewfish.furniture_object import FurnitureObject
 from stardewfish.probs_algorithm  import get_probs, get_probs_with_target
 from stardewfish.player_object    import Player
+from stardewfish.utils            import clamp
 
 class GameObject():
     
@@ -351,6 +352,20 @@ class CatchableData():
         elif size < 0.66: return constants.QUALITY_SILVER
         else:             return constants.QUALITY_GOLD
 
+    def get_pct_perfect(self) -> float:
+        """Get the percent of perfects for this fish.
+        Returns game.player.pct_perfect directly if DO_PERFECTION_DIFFICULTY_SCALE is false.
+        """
+        if not config.DO_PERFECTION_DIFFICULTY_SCALE:
+            return game.player.pct_perfect
+        # A level 1 player will do worse a la fishing bar size than a level 10, account for this. Slightly.
+        # 10 is the ideal value here, with each level below subtracting a (subjective) 5% (level 14 does 1.2x, which, sure, i guess.)
+        scaled_pct_level      = 0.5 + (0.05 * game.player.fishing_level)
+        # 50 should be the 'tipping point' of which below perfection should be easier, and above harder.
+        # Specifically, a carp gets a 1.3x, and a glacierfish gets a 0.5x. Not perfect, but better than nothing
+        scaled_pct_difficulty = (1.5 - self.difficulty/100)
+        return clamp(game.player.pct_perfect*scaled_pct_difficulty*scaled_pct_level, 0, 1)
+
     def get_quality_proportions(self) -> dict[int, float]:
         """
         Gets the percent of fish that should be of a certain quality. It returns in the order of 
@@ -382,15 +397,17 @@ class CatchableData():
                 b = max(min_size, bounds_min)
                 qualities[iter] = max(0, (a - b) / size_range)
 
-        if game.player.pct_perfect == 0:
+        scaled_pct_perfect = self.get_pct_perfect()
+
+        if scaled_pct_perfect == 0:
             return qualities # because yuss
         
         # only silver/gold get quality increases like this, so its sane to handle manually
         # split proportion of perfects from gold
-        split_from_gold = qualities[constants.QUALITY_GOLD] * game.player.pct_perfect
+        split_from_gold = qualities[constants.QUALITY_GOLD] * scaled_pct_perfect
         qualities[constants.QUALITY_GOLD] -= split_from_gold
         # split proportion of perfects from silver
-        split_from_silver = qualities[constants.QUALITY_SILVER] * game.player.pct_perfect
+        split_from_silver = qualities[constants.QUALITY_SILVER] * scaled_pct_perfect
         qualities[constants.QUALITY_SILVER] -= split_from_silver
         # add back to their respective qualities
         qualities[constants.QUALITY_GOLD] += split_from_silver
@@ -462,7 +479,7 @@ class CatchableData():
         resultant_xp = sum(scaled_quality_xp)
         resultant_xp = floor(resultant_xp + (float(self.difficulty) / 3))
         # Handle proportional adjustment to XP gains
-        perfect_xp = 2.4 * game.player.pct_perfect
+        perfect_xp = 2.4 * self.get_pct_perfect()
         resultant_xp = floor(resultant_xp * perfect_xp)
         if treasure: resultant_xp = floor(resultant_xp * 2.2)
         if self.is_legendary(): resultant_xp = floor(resultant_xp * 5)

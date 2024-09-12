@@ -22,7 +22,6 @@ def process_permutation(prob_list, prob_list_inverted, permutations):
             sum_probs[i] += current_prob
 
     total_permutations = factorial(len(prob_list))
-    print(sum_probs)
     final_sums = [i/total_permutations for i in sum_probs]
     return final_sums
 

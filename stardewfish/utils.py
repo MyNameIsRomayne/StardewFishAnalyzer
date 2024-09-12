@@ -15,6 +15,10 @@ class Path(pathlib.Path):
     def __add__(self, otherPath:str|pathlib.Path) -> "Path":
         return Path(f"{self}/{otherPath}")
 
+def clamp(value, min_value, max_value):
+    """Small function to make clamping a number between two numbers not make my head spin."""
+    return max(min_value, min(value, max_value))
+
 # Returns whether the given file exists. If create is True, creates the file
 # Returns True if the file already existed, False otherwise.
 def ensure_file_exists(file_path:str, create = False) -> bool:
@@ -197,7 +201,7 @@ def military_to_classic(internal_time:int) -> str:
     minutes = int(internal_time%100)
     am_or_pm = ("AM") if (internal_time < 1200) else ("PM")
     hours = (hours - 12) if (internal_time > 1200) else (hours)
-    return f"{hours}:{minutes}{am_or_pm}"
+    return f"{str(hours).ljust(2, "0")}:{str(minutes).ljust(2, "0")}{am_or_pm}"
 
 def get_dir_total_file_lines() -> int:
     """Get the total amount of lines in the current directory. IDK, its just cool."""
