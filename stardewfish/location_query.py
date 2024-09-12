@@ -24,7 +24,7 @@ def get_location_stats(locations=[]):
 
     use_locations = config.LOCATIONS if (len(locations) == 0) else locations
 
-    results = [game.location_objects[key].get_composition() for key in use_locations]
+    results = [game.location_objects[str(key).lower().title()].get_composition() for key in use_locations]
 
     printable_location_data:list[list[str]] = []
     row_len = 4
