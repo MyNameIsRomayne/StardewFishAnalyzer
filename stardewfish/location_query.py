@@ -33,7 +33,7 @@ def get_location_stats(locations=[]):
     for iter, location in enumerate(results):
         if (location == None):
             continue
-        location_name = config.LOCATIONS[iter]
+        location_name = use_locations[iter]
         for sublocation in location:
             # Get format data & average XP/Coin data
             if location[sublocation] == None:
