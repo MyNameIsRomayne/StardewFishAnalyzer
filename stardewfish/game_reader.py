@@ -11,13 +11,13 @@ from win32api import GetFileVersionInfo, LOWORD, HIWORD
 def get_version() -> str:
     """
     Get the current version of the unpacked content.
-    returns: A string representing the build number, e.g. 1.6.8.24119"
+    returns: A number representing the build number, e.g. 1.6.8.24119"
     Modified from https://stackoverflow.com/questions/580924/how-to-access-a-files-properties-on-windows
     """
-    info = GetFileVersionInfo(str(config_paths.FILE_STARDEW_EXECUTABLE), "\\")
+    info = GetFileVersionInfo(config_paths.FILE_STARDEW_EXECUTABLE, "\\")
     ms = info['FileVersionMS']
     ls = info['FileVersionLS']
-    return ".".join([HIWORD(ms), LOWORD(ms), HIWORD(ls), LOWORD(ls)])
+    return ".".join([str(n) for n in [HIWORD(ms), LOWORD(ms), HIWORD(ls), LOWORD(ls)])
 
 def save_objects(objects:dict[str], file_path:str) -> None:
     """
