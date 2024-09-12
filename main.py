@@ -28,7 +28,8 @@ def main():
         quit()
     
     elif query_type == "fish":
-        fish_name = args[2]
+        # if its a name like 'sea cucumber' (without the quotes), get that
+        fish_name = ' '.join(args[2:])
         handle_fish_query(fish_name)
         quit()
 

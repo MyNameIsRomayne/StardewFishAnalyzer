@@ -65,7 +65,7 @@ def handle_fish_query(value:str):
 
     # Min/max size relative to player data
     min_size_rel, max_size_rel = catchable.get_fish_size_ranges()
-    min_size_rel, max_size_rel = min_size_rel*float(catchable.min_size), max_size_rel*float(catchable.max_size)
+    min_size_rel, max_size_rel = round(min_size_rel*float(catchable.min_size), 2), round(max_size_rel*float(catchable.max_size), 2)
 
     quality_proportions_unformatted = catchable.get_quality_proportions()
     formatpct = lambda k: f"{round(quality_proportions_unformatted[k]*100, 2)}%"
