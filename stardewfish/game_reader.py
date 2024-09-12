@@ -14,7 +14,7 @@ def get_version() -> str:
     returns: A number representing the build number, e.g. 1.6.8.24119"
     Modified from https://stackoverflow.com/questions/580924/how-to-access-a-files-properties-on-windows
     """
-    info = GetFileVersionInfo(config_paths.FILE_STARDEW_EXECUTABLE, "\\")
+    info = GetFileVersionInfo(str(config_paths.FILE_STARDEW_EXECUTABLE), "\\")
     ms = info['FileVersionMS']
     ls = info['FileVersionLS']
     return ".".join([str(n) for n in [HIWORD(ms), LOWORD(ms), HIWORD(ls), LOWORD(ls)]])
