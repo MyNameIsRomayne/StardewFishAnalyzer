@@ -9,7 +9,7 @@ import config
 import config_paths
 import stardewfish.utils as utils
 
-def try_convert_number(user_value:str) -> str|float|int:
+def try_convert_value(user_value:str) -> str|float|int|bool:
     try:
         return int(user_value)
     except ValueError:
@@ -17,7 +17,11 @@ def try_convert_number(user_value:str) -> str|float|int:
     try:
         return float(user_value)
     except ValueError:
-        return user_value # it is definitely not a float or int
+        pass # it is definitely not a float or int, but could be bool
+    try:
+        return bool(user_value)
+    except ValueError:
+        return user_value # yeah no its a string
 
 def handle_config_query(args:list[str]):
     
@@ -31,7 +35,7 @@ def handle_config_query(args:list[str]):
 
     elif args[0] == "set":
         args_key, args_val = args[1].lower(), args[2]
-        args_val = try_convert_number(args_val)
+        args_val = try_convert_value(args_val)
         if args_key not in config._default_config.keys():
             print(f"Key {args_key} not recognized.")
             return
