@@ -191,7 +191,7 @@ def classic_to_military(classical_time:str) -> int:
     final_time += (hours * 100)
     final_time += (minutes * 1)
     # Factor in AM/PM
-    if (am_or_pm == "pm"):
+    if (am_or_pm == "pm" and hours != 12):
         final_time += 1200
     return final_time
 
@@ -200,7 +200,7 @@ def military_to_classic(internal_time:int) -> str:
     hours = int(internal_time/100)
     minutes = int(internal_time%100)
     am_or_pm = ("AM") if (internal_time < 1200) else ("PM")
-    hours = (hours - 11) if (internal_time > 1200) else (hours)
+    hours = (hours - 11) if (internal_time > 1299) else (hours)
     return f"{str(hours).rjust(2, "0")}:{str(minutes).ljust(2, "0")}{am_or_pm}"
 
 def get_dir_total_file_lines() -> int:
