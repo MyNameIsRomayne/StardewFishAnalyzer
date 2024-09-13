@@ -18,10 +18,12 @@ def try_convert_value(user_value:str) -> str|float|int|bool:
         return float(user_value)
     except ValueError:
         pass # it is definitely not a float or int, but could be bool
-    try:
-        return bool(user_value)
-    except ValueError:
-        return user_value # yeah no its a string
+    if user_value.lower() == "false":
+        return False
+    elif user_value.lower() == "true":
+        return True
+    else:
+        return user_value # ok its a string
 
 def handle_config_query(args:list[str]):
     
