@@ -313,6 +313,21 @@ class CatchableData():
         """
         self.fish_object = game.base_objects[self.id]
 
+    def get_seasons(self) -> list[str]:
+        """Get all seasons this fish is catchable."""
+        related_object = game.base_objects[self.id]
+        season_context_tags = [str(tag) for tag in related_object.context_tags if "season_" in tag]
+        season_context_tags = [tag.replace("season_", '').title() for tag in season_context_tags]
+        return season_context_tags
+
+    def get_locations(self) -> list[str]:
+        """Get all locations where this fish is catchable."""
+        related_object = game.base_objects[self.id]
+        location_context_tags = [str(tag) for tag in related_object.context_tags if "fish_" in tag]
+        location_context_tags = [tag.replace("fish_", " ").replace("_", '').title().strip() for tag in location_context_tags]
+        location_context_tags = [tag for tag in location_context_tags if tag in constants.ALL_LOCATIONS]
+        return location_context_tags
+
     def is_trap(self) -> bool:
         """Getter for whether or not this is found in crab pot traps."""
         return self.istrap
