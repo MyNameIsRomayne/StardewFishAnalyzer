@@ -17,23 +17,26 @@ _public_config:dict = utils.read_file_json(config_paths.FILE_JSON_PUBLIC_CONFIG)
 
 # Setup default values
 _default_config = {
-    "scaleperfect" : True,
-    "showfish"     : True,
-    "fishinglevel" : 10,
-    "season"       : constants.SEASON_SPRING,
-    "weather"      : constants.WEATHER_SUNNY,
-    "time"         : utils.classic_to_military("6:00AM"),
-    "pctperfect"   : 1,
-    "rod"          : constants.FISHING_ROD_IRIDIUM,
-    "bait"         : constants.FISHING_BAIT_NONE,
-    "lure"         : constants.FISHING_LURE_NONE,
-    "baitid"       : None,
-    "depth"        : 5,
-    "locations"    : [
+    "scaleperfect"  : True,
+    "showfish"      : True,
+    "fishinglevel"  : 10,
+    "season"        : constants.SEASON_SPRING,
+    "weather"       : constants.WEATHER_SUNNY,
+    "time"          : utils.classic_to_military("6:00AM"),
+    "pctperfect"    : 1,
+    "rod"           : constants.FISHING_ROD_IRIDIUM,
+    "bait"          : constants.FISHING_BAIT_NONE,
+    "lure"          : constants.FISHING_LURE_NONE,
+    "baitid"        : None,
+    "depth"         : 5,
+    "ignorelegends" : True,
+    "locations"     : [
     constants.LOCATION_BEACH,
     constants.LOCATION_FOREST,
     constants.LOCATION_TOWN,
     constants.LOCATION_MOUNTAIN,
+    constants.LOCATION_WOODS,
+    constants.LOCATION_BACKWOODS
     ],
 }
 
@@ -58,3 +61,4 @@ BAIT_USED                 = _default_config["bait"]
 LURE_USED                 = _default_config["lure"]
 BAIT_TARGET_ID            = _default_config["baitid"] # (sardine) the current object ID of the targeted bait (if any) being used.
 WATER_DEPTH               = _default_config["depth"] # fishing zone (0, 1, 2, 3, 5)
+IGNORE_LEGENDARY_FISH     = _default_config["ignorelegends"]

@@ -684,7 +684,7 @@ def filter_catchable_fish(subloc_fish:list[FishLocation]):
         if (fish_loc.set_flag_on_catch != None):
             continue
         # Ignore boss fish
-        if (fish_loc.isbossfish):
+        if (config.IGNORE_LEGENDARY_FISH and fish_loc.isbossfish):
             continue
         # Ignore QI quest fish
         if (fish_loc.condition) and ("LEGENDARY_FAMILY" in fish_loc.condition):

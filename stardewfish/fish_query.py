@@ -5,7 +5,7 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 
 from stardewfish.game_object import game
 from stardewfish.base_object import BaseObject
-from stardewfish.game_object import CatchableData, scale_price_by_quality
+from stardewfish.game_object import CatchableData, FishLocation, scale_price_by_quality
 from stardewfish.utils       import format2DListAsTable, military_to_classic
 
 import config
@@ -74,13 +74,53 @@ def handle_fish_query(value:str):
     scaled_xp     = []
     scaled_pct_perfect = f"{round(100*catchable.get_pct_perfect(), 2)}%"
 
+    # Formatted data for read-out
+    formatted_location_data = [
+
+    ]
+
+    # Get each location+sublocation pair the fish is in
+    for possible_location in config.LOCATIONS:
+        location_data = game.location_objects[possible_location].get_composition()
+        for sublocation in location_data.keys():
+            # Assume fish not found
+            subloc_blurb = f" ({sublocation})" if sublocation != "none" else ''
+            location_data_fish = [
+                f"{possible_location}{subloc_blurb}", # location (sublocation)
+                "No", # has_fish
+                '', # seasons_appears
+                '', # weather_appears
+                '' # weight_appears
+            ]
+            subloc_val = location_data[sublocation]
+            for iter, fish in enumerate(subloc_val["fish"]):
+                fish:FishLocation
+                fish_name = fish.itemids[0].name
+
+                if fish_name.lower() != target.name.lower():
+                    continue
+                else:
+                    # Found fish, fill in location data and move on. Preformat it though ;P
+                    location_data_fish = [
+                        f"{possible_location}{subloc_blurb}", # location (sublocation)
+                        "Yes", # has_fish
+                        '', # seasons_appears
+                        '', # weather_appears
+                        f"{round( 100 * location_data[sublocation]["chances"][iter], 2)}%" # weight_appears
+                    ]
+                    break
+            formatted_location_data.append(location_data_fish)
+
     data = [
         [f"Name: {target.name}",  f"Object ID: {target.id}", f"Avg. XP: {catchable.get_average_xp()}", f"Avg. Coins: {catchable.get_average_value()}", f"Scaled % Perfect: {scaled_pct_perfect}\n"],
         ["Absolute min. size",    "Absolute max. size",      "Practical min. size",                    "Practical max. size",                          ""],
         [f"{catchable.min_size}", f"{catchable.max_size}",   f"{min_size_rel}",                        f"{max_size_rel}",                              "\n"],
         [ "",                     "Normal",                  "Silver",                                 "Gold",                                         "Iridium"],
         [ "Quality:",             f"{formatpct(0)}",         f"{formatpct(1)}",                        f"{formatpct(2)}",                              f"{formatpct(4)}"],
-        [ "Value:",               f"{scaled_values[0]}",     f"{scaled_values[1]}",                    f"{scaled_values[2]}",                          f"{scaled_values[3]}"]
+        [ "Value:",               f"{scaled_values[0]}",     f"{scaled_values[1]}",                    f"{scaled_values[2]}",                          f"{scaled_values[3]}\n"],
+        [ "Location Name",         "Appears In Location?",   f"Seasons it appears",                    f"Weather it appears in",                       f"Approx. % of catches"],
+
     ]
+    data += formatted_location_data
     print("Fish context:")
     print(format2DListAsTable(data, column_delimiter="   "))
