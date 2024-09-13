@@ -8,6 +8,7 @@ Copyright (C) 2024 Romayne (Contact @ https://github.com/MyNameIsRomayne)
 LOCATION_DEFAULT   = "Default"
 LOCATION_TOWN      = "Town"
 LOCATION_BEACH     = "Beach"
+LOCATION_OCEAN     = "Ocean" # location name is keyed as beach but sometimes referred to as Ocean
 LOCATION_MOUNTAIN  = "Mountain"
 LOCATION_FOREST    = "Forest"
 LOCATION_MINE      = "Mine"
@@ -19,6 +20,7 @@ ALL_LOCATIONS = [
     LOCATION_DEFAULT,
     LOCATION_TOWN,
     LOCATION_BEACH,
+    LOCATION_OCEAN,
     LOCATION_MOUNTAIN,
     LOCATION_FOREST,
     LOCATION_MINE,
