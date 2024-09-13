@@ -200,8 +200,8 @@ def military_to_classic(internal_time:int) -> str:
     hours = int(internal_time/100)
     minutes = int(internal_time%100)
     am_or_pm = ("AM") if (internal_time < 1200) else ("PM")
-    hours = (hours - 12) if (internal_time > 1200) else (hours)
-    return f"{str(hours).ljust(2, "0")}:{str(minutes).ljust(2, "0")}{am_or_pm}"
+    hours = (hours - 11) if (internal_time > 1200) else (hours)
+    return f"{str(hours).rjust(2, "0")}:{str(minutes).ljust(2, "0")}{am_or_pm}"
 
 def get_dir_total_file_lines() -> int:
     """Get the total amount of lines in the current directory. IDK, its just cool."""
