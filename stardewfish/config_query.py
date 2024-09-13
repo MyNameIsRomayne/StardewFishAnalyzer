@@ -34,6 +34,7 @@ def handle_config_query(args:list[str]):
         args_val = try_convert_number(args_val)
         if args_key not in config._default_config.keys():
             print(f"Key {args_key} not recognized.")
+            return
         config._public_config[args_key] = args_val
         utils.write_file_contents(config_paths.FILE_JSON_PUBLIC_CONFIG, json.dumps(config._public_config))
         return
@@ -42,5 +43,6 @@ def handle_config_query(args:list[str]):
         args_key = args[1].lower()
         if args_key not in config._default_config.keys():
             print(f"Key {args_key} not recognized.")
+            return
         print(f"{args_key} = {config._default_config[args_key]}")
         return
