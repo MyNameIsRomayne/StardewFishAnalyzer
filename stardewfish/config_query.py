@@ -11,11 +11,11 @@ import stardewfish.utils as utils
 
 def try_convert_number(user_value:str) -> str|float|int:
     try:
-        return float(user_value)
-    except ValueError:
-        pass # it could be an int
-    try:
         return int(user_value)
+    except ValueError:
+        pass # it could be a flaot still
+    try:
+        return float(user_value)
     except ValueError:
         return user_value # it is definitely not a float or int
 
