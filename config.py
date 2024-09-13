@@ -30,6 +30,7 @@ _default_config = {
     "baitid"        : None,
     "depth"         : 5,
     "ignorelegends" : True,
+    "ignoreqi"      : True,
     "locations"     : [
     constants.LOCATION_BEACH,
     constants.LOCATION_FOREST,
@@ -62,3 +63,4 @@ LURE_USED                 = _default_config["lure"]
 BAIT_TARGET_ID            = _default_config["baitid"] # (sardine) the current object ID of the targeted bait (if any) being used.
 WATER_DEPTH               = _default_config["depth"] # fishing zone (0, 1, 2, 3, 5)
 IGNORE_LEGENDARY_FISH     = _default_config["ignorelegends"]
+IGNORE_MR_QI              = _default_config["ignoreqi"]

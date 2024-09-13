@@ -687,10 +687,10 @@ def filter_catchable_fish(subloc_fish:list[FishLocation]):
         if (config.IGNORE_LEGENDARY_FISH and fish_loc.isbossfish):
             continue
         # Ignore QI quest fish
-        if (fish_loc.condition) and (config.IGNORE_LEGENDARY_FISH) and ("LEGENDARY_FAMILY" in fish_loc.condition):
+        if (fish_loc.condition) and (config.IGNORE_MR_QI) and not fish_loc.isbossfish and ("LEGENDARY_FAMILY" in fish_loc.condition):
             continue
         # Ignore QI beans
-        if (fish_loc.condition) and ("DROP_QI_BEANS" in fish_loc.condition):
+        if (fish_loc.condition) and (config.IGNORE_MR_QI) and ("DROP_QI_BEANS" in fish_loc.condition):
             continue
         # Ignore festival fish
         if (fish_loc.condition) and ("IS_PASSIVE_FESTIVAL_OPEN" in fish_loc.condition):
