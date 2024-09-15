@@ -725,7 +725,7 @@ def filter_catchable_fish(subloc_fish:list[FishLocation]):
         condition_weather = get_condition(fish_loc.condition, "WEATHER")
         if condition_weather != False:
             # Get all arguments as lowercase strings. helps for case-insensitive season checking.
-            tokens = [str(token).lower() for token in condition_season.split(" ")]
+            tokens = [str(token).lower() for token in condition_weather.split(" ")]
             # It should look something like ["weather", "here", "rain", "storm"] now
             if game.weather not in tokens:
                 continue
