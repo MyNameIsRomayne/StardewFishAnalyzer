@@ -2,7 +2,7 @@
 
 ## Preamble
 
-This is a personal project currently owned and contributed by one person (me, Romayne). This project is far from being complete or accurate, but is somewhat usable in its current state. All contributions and issues are welcome, as well as feature requests. The intent of open-sourcing this project is to garner feedback and contributions, with such contributions ideally being in parts of the project which I have been unable to complete myself. That being said, I hope you can enjoy the project as it is now.
+This is a personal project currently owned and contributed by one person (me, Romayne), with an additional amazing contribution and additional support from Aceynk. This project is far from being complete or accurate, but is somewhat usable in its current state. All contributions and issues are welcome, as well as feature requests. The intent of open-sourcing this project is to garner feedback and contributions, with such contributions ideally being in parts of the project which I have been unable to complete myself. That being said, I hope you can enjoy the project as it is now.
 
 ## What is this?
 
