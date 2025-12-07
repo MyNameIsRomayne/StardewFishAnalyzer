@@ -38,8 +38,8 @@ def get_probs(prob_list:np.ndarray):
 
     if len(prob_list) >= 9:
         print(f"WARN: Prob list of length {len(prob_list)} entered into get_probs, this will take a while!")
-    elif len(prob_list) > 10:
-        raise TimeoutError("I refuse to let you take what will be approximately 5 minutes for this.")
+    elif len(prob_list) > 11:
+        raise TimeoutError("Function got input which is too long for")
 
     # Helper var to reduce the amount of times prob_list needs to be inverted
     prob_list_inverted = 1 - prob_list
@@ -47,7 +47,7 @@ def get_probs(prob_list:np.ndarray):
     if len(prob_list) < 7:
         # Below 5, its reasonable to just use the current process rather than deal with multiprocessing overhead
         return process_permutation(prob_list, prob_list_inverted, itertools.permutations(range(len(prob_list))))
-
+    
     # Setup variables before sending off the worker processes
     # Final collection list for the results
     sum_probs = [0]*len(prob_list)
