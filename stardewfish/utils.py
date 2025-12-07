@@ -10,7 +10,7 @@ import json
 
 import pathlib
 
-class Path(pathlib.Path):
+class Path(pathlib.WindowsPath):
     """A brief extension of the Path class from pathlib to allow for addition operations."""
     def __add__(self, otherPath:str|pathlib.Path) -> "Path":
         return Path(f"{self}/{otherPath}")
@@ -201,7 +201,7 @@ def military_to_classic(internal_time:int) -> str:
     minutes = int(internal_time%100)
     am_or_pm = ("AM") if (internal_time < 1200) else ("PM")
     hours = (hours - 11) if (internal_time > 1299) else (hours)
-    return f"{str(hours).rjust(2, "0")}:{str(minutes).ljust(2, "0")}{am_or_pm}"
+    return f"{str(hours).rjust(2, '0')}:{str(minutes).ljust(2, '0')}{am_or_pm}"
 
 def get_dir_total_file_lines() -> int:
     """Get the total amount of lines in the current directory. IDK, its just cool."""

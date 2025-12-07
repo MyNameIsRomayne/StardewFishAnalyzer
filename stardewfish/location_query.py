@@ -47,7 +47,7 @@ def get_location_stats(locations=[]):
             location_data = [""]*row_len
             printable_location_data.append([""]*row_len)
             location_data[0] = f"{location_name}{subloc_blurb}"
-            location_data[1] = f"Total Catchables: {len(location[sublocation]["fish"])}"
+            location_data[1] = f"Total Catchables: {len(location[sublocation]['fish'])}"
             location_data[2] = f"Avg Coin: {avg_coin}"
             location_data[3] = f"Avg XP: {avg_xp}"
             printable_location_data.append(location_data)

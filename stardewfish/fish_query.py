@@ -106,7 +106,7 @@ def handle_fish_query(value:str):
                         "Yes", # has_fish
                         '', # seasons_appears
                         '', # weather_appears
-                        f"{round( 100 * location_data[sublocation]["chances"][iter], 2)}%" # weight_appears
+                        f"{round( 100 * location_data[sublocation]['chances'][iter], 2)}%" # weight_appears
                     ]
                     break
             formatted_location_data.append(location_data_fish)
